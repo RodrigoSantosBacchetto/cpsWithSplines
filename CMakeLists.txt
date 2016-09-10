@@ -9,21 +9,10 @@ set(CMAKE_CONFIGURATION_TYPES "Debug")
 # Source directory
 include_directories(source-files)
 
-# Local header files
-SET(SOURCE_FILES
-                Imports.hpp
-                CpsMatrix.hpp
-                Persistence.hpp
-)
-
 # Local source files
 SET(SOURCE_FILES
                 lastCode.cpp
-                CpsMatrix.cpp
 )
-
-
-
 
 add_executable(tesis ${SOURCE_FILES})
 
