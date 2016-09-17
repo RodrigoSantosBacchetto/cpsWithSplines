@@ -43,7 +43,7 @@ namespace cvx {
         /**
          * @brief       A type for the embedded cost/distance functor.
          */
-        typedef typename DistanceFunction distance_t;
+        typedef DistanceFunction distance_t;
 
 
         /**

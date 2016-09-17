@@ -41,12 +41,12 @@ namespace cvx {
         /**
          * @brief       A type for a shortest path algorithm traits.
          */
-        typedef typename  ShortingAlgorithm algorithm_t;
+        typedef ShortingAlgorithm algorithm_t;
 
         /**
          * @brief       A type for a distance functor.
          */
-        typedef typename DistanceFunction distance_t;
+        typedef DistanceFunction distance_t;
 
         /**
          * @brief       A type for the matrix of distances (or costs).

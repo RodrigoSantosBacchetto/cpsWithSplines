@@ -361,7 +361,6 @@ namespace cvx {
             return embedded(p1, p2);
         }
 
-
     public:
 
         norm_t norm; /**< A embedded norm functor. */
@@ -389,13 +388,6 @@ namespace cvx {
     template< typename NormFunction >
     class Distance_ : public DistanceConnective_< NormFunction, ConnectorFlat > {
 
-    public:
-
-        /**
-         * @brief      A type for norm functors.
-         */
-        typedef NormFunction norm_t;
-
 
     public:
 
@@ -407,7 +399,7 @@ namespace cvx {
          *
          * @remark      This is a mandatory member function.
          */
-        Distance_& operator=(const Distance_& src) {
+        Distance_ operator=(const Distance_& src) {
             return assign(src);
         }
 
@@ -419,7 +411,7 @@ namespace cvx {
          *
          * @remark      This is a mandatory member function.
          */
-        Distance_& operator=(Distance_&& src) {
+        Distance_ operator=(Distance_&& src) {
             return assign(std::move(src));
         }
 
@@ -431,8 +423,8 @@ namespace cvx {
          *
          * @remark      This is a mandatory member function.
          */
-        Distance_& assign(const Distance_& src) {
-            return (DistanceConnective_::assign(src), *this);
+        Distance_ assign(const Distance_& src) {
+            return (DistanceConnective_< NormFunction, ConnectorFlat >::assign(src), *this);
         }
 
 
@@ -443,8 +435,8 @@ namespace cvx {
          *
          * @remark      This is a mandatory member function.
          */
-        Distance_& assign(Distance_&& src) {
-            return (DistanceConnective_::assign(std::move(src)), *this);
+        Distance_ assign(Distance_&& src) {
+            return (DistanceConnective_< NormFunction, ConnectorFlat >::assign(std::move(src)), *this);
         }
 
     };

@@ -97,7 +97,7 @@ namespace cvx {
 
         template< typename Type > static
         Real normP_2(const Point_< Type >& p) {
-            return norm_lp<Type, P>(v);
+            return norm_lp<Type, P>(p);
         }
 
     };

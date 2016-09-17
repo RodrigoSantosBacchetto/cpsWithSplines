@@ -321,7 +321,7 @@ namespace cvx {
             }
         }
 
-        return out != nullptr;
+        return !(!out);
     }
 
 
