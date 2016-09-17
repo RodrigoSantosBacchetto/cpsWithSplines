@@ -1,4 +1,10 @@
-
+/*CPS libraries*/
+#include <Boundary.hpp>
+#include <CentroidDistanceFunction.hpp>
+#include <CpSignature.hpp>
+#include <CpsMatrix.hpp>
+#include <PlanarSet.hpp>
+/*common files*/
 #include <iostream>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
@@ -13,6 +19,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <PlanarSet.hpp>
 
 
 using namespace Eigen;
@@ -34,23 +41,24 @@ int main() {
 
 
 
-/*    cvx::PlanarSet shape;*/
-/*    shape.imread("C:\\Users\\Santos\\Desktop\\spoon-4.jpg");*/
+    cvx::PlanarSet shape;
+    shape.imread("C:\\Users\\Santos\\Desktop\\spoon-4.jpg");
     // Obtiene los contornos de la silueta.
-/*    cvx::Boundary sil = shape.boundary();*/
+    cvx::Boundary sil = shape.boundary();
     // Crea la función de contorno, usando el contorno externo (índice=0).
-/*    cvx::Curve con = sil.largest();*/
+    cvx::Curve con = sil.largest();
     // Crea la función que computa el CPS.
-/*    cvx::CpsEuclidean cps;*/
+    cvx::CpsEuclidean cps;
     // Crea dos matrices de CPS. Cada fila es el CPS de un punto sampleado.
-/*    cvx::CpsMatrix mta, mtb;*/
+    cvx::CpsMatrix mta, mtb;
     // Obtiene el CPS de M=128 puntos, con una definición de M=127 muestras
     // (se elimina la columna con ceros). La matriz resultante es de 128x127
     // elementos. Usa un algoritmo rápido que tarda la mitad del tiempo, para
     // el caso particular en que M=N+1, o sea, cuando el tamaño de muestreo
     // del contorno (M) es igual al tamaño de  muestreo del CPS (N) aumentado
     // en una unidad.
- /*   mta = cps(con, 128);*/
+    mta = cps(con, 128);
+    mtb = cps.full(con, 128, 127);
 
 
 
