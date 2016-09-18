@@ -83,7 +83,7 @@ namespace cvx {
          * @param[in]   data  A constant reference to a vector of points.
          */
         explicit
-        Polygon(const path_t& data) :
+        Polygon(const Polygon_::path_t& data) :
         PathBase_(data) {
             // NOOP
         }

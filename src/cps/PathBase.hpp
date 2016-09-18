@@ -34,6 +34,7 @@
 #include "Math.hpp"
 #include "PathLength.hpp"
 #include "Persistence.hpp"
+#include "Polygon.hpp"
 #include <opencv2/imgproc.hpp>
 #include <algorithm>
 #include <cassert>
