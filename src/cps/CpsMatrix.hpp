@@ -31,10 +31,6 @@
 #include "Imports.hpp"
 #include "Persistence.hpp"
 
-
-// Forward declaration for class serialization mechanism.
-CVX_DECLARE_CLASS_PERSISTENCE_PROXIES(CpsMatrix)
-
 namespace cvx {
 
     class CpsMatrix {
@@ -54,15 +50,15 @@ namespace cvx {
 
         CpsMatrix(matrix_t&& cps);
 
-        CpsMatrix& operator=(const CpsMatrix& src) {
+        CpsMatrix operator=(const CpsMatrix& src) {
             return assign(src);
         }
 
-        CpsMatrix& operator=(CpsMatrix&& tmp) {
+        CpsMatrix operator=(CpsMatrix&& tmp) {
             return assign(std::move(tmp));
         }
 
-        CpsMatrix& assign(const CpsMatrix& src);
+        CpsMatrix assign(const CpsMatrix& src);
 
         CpsMatrix& assign(CpsMatrix&& tmp);
 
@@ -103,8 +99,6 @@ namespace cvx {
 
         Matrix1r _cps;
 
-        CVX_DECLARE_CLASS_PERSISTENCE(CpsMatrix, "cps-matrix")
-
     };
 
     // Comparison operators
@@ -120,10 +114,6 @@ namespace cvx {
     }
 
 } // namespace cvx
-
-
-// Definitions for class serialization mechanism.
-CVX_DEFINE_CLASS_PERSISTENCE_PROXIES(CpsMatrix)
 
 
 #endif // CbVX_DESCRIPTOR_CPSMATRIX_HPP__INCLUDED

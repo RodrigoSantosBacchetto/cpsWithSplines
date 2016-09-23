@@ -38,6 +38,7 @@
 #pragma once
 
 #include "Imports.hpp"
+#include "Math.hpp"
 
 
 namespace cvx {
