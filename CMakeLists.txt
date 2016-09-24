@@ -23,6 +23,7 @@ SET(SOURCE_FILES
         src/cps/DistanceLinf.hpp
         src/cps/DistanceL2.hpp
         src/cps/NormL2.hpp
+        src/cps/NormLp.hpp
         src/cps/ConnectorFlat.hpp
 
         # Headers
