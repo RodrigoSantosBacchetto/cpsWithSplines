@@ -3,6 +3,8 @@
 
 int main() {
 
+    double alfa = 1;
+    double beta = 1;
     int sample = 20;
 
 
@@ -23,20 +25,26 @@ int main() {
     double X[points];
     double Y[points];
 
-    int pointsNumber = 0;
-
-/*    std::cout << "x1"<< std::endl << contours[0][0] << std::endl;
-    std::cout << "x2"<< std::endl << contours[1][0] << std::endl;
-    std::cout << "x3"<< std::endl << contours[2][0] << std::endl;*/
-    int asdaps = sample;
-    for(int i = 0; i <  contours.size(); i= i+ (int)(contours.size()/sample)){
-        std::cout << "X" + i<< std::endl << contours[i][0].x << std::endl;
-        X[pointsNumber] = contours[i][0].x;
-        Y[pointsNumber] = contours[i][0].y;
-        std::cout << "Y" + i<< std::endl << contours[i][0].y << std::endl;
-        pointsNumber++;
-    }
+    /*Extract points into arrays*/
+    convertPoints(X, Y, contours, sample);
 
     cvx::CpsMatrix mta = generateCpsWithSplineRefinement(points, X, Y, contours);
+    cvx::CpsMatrix mtb = generateCpsWithSplineRefinement(points, X, Y, contours);
 
+    /* TODO: struct of this.
+     * the X(METRIC 1) coordenate is the minim sum and the Y cordenate is the index of that column on the matrix cpsA*/
+    cv::Point2d matchingData = matchingCps( mta, mtb);
+    /* Result distance of point matching*/
+    double dist1 = matchingData.x;
+
+    /*Metric 2 implementation in progress*/
+
+    /* Result distance of afin transformation*/
+    double dist2 = 1;
+
+    double finalDisimilarityDistance = dist1*alfa + beta*dist2;
 }
+
+
+
+

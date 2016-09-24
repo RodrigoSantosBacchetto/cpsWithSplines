@@ -32,6 +32,9 @@ typedef Eigen::SparseMatrix<double> sMatrix;
 /*Functions prototype declaration*/
 void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::vector<cv::Point>> vector);
 cvx::CpsMatrix generateCpsWithSplineRefinement(int points, double X[], double Y[], std::vector<std::vector<cv::Point>> contours);
+cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
+cv::Point2d minSum(cv::Mat mat);
+void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample);
 
 
 /*Functions implementation*/
@@ -209,7 +212,81 @@ void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::
 
     cvShowImage("Image",img);
     cvWaitKey( 0 );
-};
+}
+
+/**
+ *
+ * This method is used to get the column that has the minum sum value(saved in X) and the index of that column(saved on Y).
+ * X is the result value of the metric dist_1.
+ */
+cv::Point2d minSum(std::vector<std::vector<double> > mat) {
+    /*We get the sum of the values for each column*/
+    std::vector<double> vector;
+    for(double j = 0; j <  mat[0].size(); j++) {
+        double sum = 0 ;
+        for (double i = 0 ; i < mat.size() ; i++) {
+            sum += mat[i][j];
+        }
+        vector[j] = sum;
+    }
+    /*We get the minum value in the vector and the index of that value which represents the column of the matrix with the minum value*/
+    double min = vector[0];
+    int index = 0;
+    for(int j = 0; j <  vector.size(); j++) {
+        if(vector[j]<min){
+            min = vector[j];
+            index = j;
+        }
+    }
+    cv::Point2d result;
+    result.x = min;
+    result.y = index;
+    return result;
+}
+
+/**
+* This method is going to make the matching step, using the euclidian distance.(is possible to use the r_measure distance measure).
+*/
+cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB){
+    /* Number of point samples*/
+    double n = cpsA.data().rows;
+    std::vector<std::vector<double> > matrix;
 
 
+    /* Each value of k represent a different rotation*/
+    int vectorIndex = 0;
+    std::vector<double> vector;
+    for(int k = 0; k <  n; k++) {
+        for (double u = k - 1; u < n + k - 2; u++) {
+            vector[vectorIndex] = fmod( u , n)+1;
+            vectorIndex++;
+        }
+        /* Calculate the euclidian distance*/
+        for(int i = 0; i <  n; i++) {
+            double sumDist = 0;
+            for(int j = 0; j <  n; j++) {
+                sumDist += pow(cpsA.data()[i,j]-cpsB.data()[vector[i],j],2);
+            }
+            matrix[i][k] = sqrt(sumDist);
+        }
+        vectorIndex = 0;
+    }
+    /* the X(METRIC 1) coordenate is the minim sum and the Y cordenate is the index of that column on the matrix cpsA*/
+    cv::Point2d matchingData = minSum(matrix);
+    return matchingData;
+}
+
+/**
+ * Extract contour points in order to get a better structure to calculate the cubic spline.
+ */
+void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample) {
+    int pointsNumber = 0;
+    for(int i = 0; i < contours.size(); i= i + (int)(contours.size() / sample)){
+        std::cout << "X" + i << std::endl << contours[i][0].x << std::endl;
+        X[pointsNumber] = contours[i][0].x;
+        Y[pointsNumber] = contours[i][0].y;
+        std::cout << "Y" + i << std::endl << contours[i][0].y << std::endl;
+        pointsNumber++;
+    }
+}
 #endif //CPSWITHSPLINES_MAIN_H
