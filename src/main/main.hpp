@@ -24,6 +24,8 @@
 #include <fstream>
 #include <iostream>
 
+#define MINUS_ONE 99
+#define DOS 150
 
 using namespace Eigen;
 
@@ -38,6 +40,12 @@ cv::Point2d minSum(cv::Mat mat);
 void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample);
 std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> vector, int sample);
 
+void getSortedContour(cv::Mat);
+std::vector<cv::Point> getKuimContour (cv::Mat, int);
+int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
+
+int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
 
 /*Functions implementation*/
 MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area);
@@ -378,4 +386,83 @@ std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> 
     }
     return newSample;
 }
+
+std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContours) {
+
+    cv::Mat data1;
+    cv::threshold(originalImage, data1, 192.0, 255.0,CV_THRESH_BINARY);
+
+    std::vector<cv::Point> contour;
+    int i = 0, j = 0, k = numberOfContours - 1;
+
+    // add black borders to our image
+    imshow("beforeBorder",data1);
+    copyMakeBorder(data1, data1, 2, 2, 2, 2, CV_HAL_BORDER_CONSTANT, CV_RGB(0,0,0) );
+    imshow("aferBorder",data1);
+
+    int totalRows = data1.rows;
+    int totalCols = data1.cols;
+
+    IplImage* allBlack = cvCreateImage(cvSize(totalRows, totalCols), 8, 1);
+    cvSetZero(allBlack);
+    cv::Mat data2 = cv::cvarrToMat(allBlack);
+
+    // First, we search for a starting position
+    for(int sy = 0; sy < totalRows; sy++){
+        for(int sx = 0; sx < totalCols; sx++){
+            if (((int)(data1.at<uchar>(sy,sx)) == 255)
+                && ((sx == 1) || ((int)(data1.at<uchar>(sy,sx - 1)) == 0))){
+
+                //When a valid starting point is reached, prepare to track contour
+                int x = sx;
+                int y = sy;
+                data1.at<uchar>(y,x) = (uchar)(MINUS_ONE);
+                data2.at<uchar>(y,x) = 255;
+                int last = 0;
+                int next = getNext(x, y, last, data1, totalRows, totalCols);
+
+                k++;
+
+                // Track contour counter clockwise
+                while (( (int)(data1.at<uchar>(y + dy[next], x + dx[next])) > 100 ) && (k==1)){
+
+                    y = y + dy[next];
+                    x = x + dx[next];
+                    data1.at<uchar>(y,x) = (uchar)(DOS);
+                    data2.at<uchar>(y,x) = 255;
+
+                    last = (next + 4) % 8;
+                    next = getNext(x, y, last, data1, totalRows, totalCols);
+
+                    cv::Point contourPoint = cvPoint(x,y);
+                    contour.push_back(contourPoint);
+
+                }
+            }
+        }
+    }
+
+    imshow("data2", data2);
+
+    return contour;
+
+
+}
+
+
+int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols) {
+    int next = (last + 2) % 8;
+
+    int nx = x + dx[next];
+    int ny = y + dy[next];
+
+    while((next != last) && ((nx < 0) || (nx > totalCols) || (ny < 0) || (ny > totalRows) || ((int)(data.at<uchar>(ny,nx)) == 0))) {
+        next = (next + 1) % 8;
+        nx = x + dx[next];
+        ny = y + dy[next];
+    }
+
+    return next;
+}
+
 #endif //CPSWITHSPLINES_MAIN_H
