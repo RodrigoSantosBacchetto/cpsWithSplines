@@ -12,9 +12,6 @@
 #include <iostream>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
-#include <iostream>
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
 #include <opencv2/highgui/highgui.hpp>
 #include <vector>
 #include <opencv2/imgproc.hpp>
@@ -22,8 +19,10 @@
 #include <cassert>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
 
+#define MINUS_ONE 99
+#define DOS 150
+#define ONLY_EXTERNAL_CONTOUR 1
 
 using namespace Eigen;
 
@@ -31,13 +30,22 @@ typedef Eigen::SparseMatrix<double> sMatrix;
 
 /*Functions prototype declaration*/
 void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::vector<cv::Point>> vector);
-MatrixXd generateCpsWithSplineRefinement(int points, std::vector<cv::Point> X,
-                                               std::vector<std::vector<cv::Point>> Y);
+MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> X);
 cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
 cv::Point2d minSum(cv::Mat mat);
 void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample);
 std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> vector, int sample);
 
+std::vector<cv::Point> getKuimContour (cv::Mat, int);
+std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point>, int);
+int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
+
+//only for debug
+cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int , int );
+
+
+int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
 
 /*Functions implementation*/
 MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area);
@@ -46,9 +54,11 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area);
  * This method is used to generate the cps matrix, using the cubic spline function constructed with the countour points.
  * TODO: Implement a class with this functions and attributes.
  */
-MatrixXd generateCpsWithSplineRefinement(int points, std::vector<cv::Point> vector, std::vector<std::vector<cv::Point>> contours) {
+MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
 
     // Define aux arraysfac
+
+    int points = vector.size();
 
     sMatrix Coefficients(points,points);
 
@@ -157,9 +167,12 @@ MatrixXd generateCpsWithSplineRefinement(int points, std::vector<cv::Point> vect
 
     std::cout << std::endl << resultsMatrixX(0,0) + resultsMatrixX(0,1) + resultsMatrixX(0,2) + resultsMatrixX(0,3);
 
+
+    cv::Mat testImg = generateSplineBasedFigure(resultsMatrixX, resultsMatrixY, 500, 500);
+    imshow("FinalSplineBasedImage",testImg);
     /* Calculate the area for the contour in order to normalize*/
-    const double area = sqrt(contourArea(vector));
-    return computeCps(vector, area);
+//    const double area = sqrt(contourArea(vector));
+//    return computeCps(vector, area);
 }
 
 /**
@@ -315,35 +328,6 @@ cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB){
     return matchingData;
 }
 
-/**
- * Extract contour points in order to get a better structure to calculate the cubic spline.
- */
-void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample) {
-    int pointsNumber = 0;
-    int countContourPoints = 0;
-    for(int i = 0; i < contours.size(); i++){
-        for(int j = 0; j < contours[i].size(); j++) {
-            if(contours[i][j].x > 10000 || contours[i][j].x < -1)
-                break;
-            countContourPoints++;
-        }
-    }
-    int dist = countContourPoints/sample;
-    int flag = countContourPoints/sample;
-    for(int i = 0; i < contours.size(); i++){
-        for(int j = 0; j < contours[i].size(); j++) {
-            if(contours[i][j].x > 2000 || contours[i][j].x < -1 || contours[i][j].y > 2000 || contours[i][j].y < -1)
-                break;
-            if(dist == flag) {
-                X[pointsNumber] = contours[i][j].x;
-                Y[pointsNumber] = contours[i][j].y;
-                pointsNumber++;
-                flag = 0;
-            }
-            flag++;
-        }
-    }
-}
 
 /**
  * This method convert a contour of points into a vector of points.
@@ -378,4 +362,122 @@ std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> 
     }
     return newSample;
 }
+
+std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContours) {
+
+    cv::Mat data1;
+    cv::threshold(originalImage, data1, 192.0, 255.0,CV_THRESH_BINARY);
+
+    std::vector<cv::Point> contour;
+    int i = 0, j = 0, k = numberOfContours - 1;
+
+    // add black borders to our image
+    imshow("beforeBorder",data1);
+    copyMakeBorder(data1, data1, 2, 2, 2, 2, CV_HAL_BORDER_CONSTANT, CV_RGB(0,0,0) );
+    imshow("aferBorder",data1);
+
+    int totalRows = data1.rows;
+    int totalCols = data1.cols;
+
+    IplImage* allBlack = cvCreateImage(cvSize(totalRows, totalCols), 8, 1);
+    cvSetZero(allBlack);
+    cv::Mat data2 = cv::cvarrToMat(allBlack);
+
+    // First, we search for a starting position
+    for(int sy = 0; sy < totalRows; sy++){
+        for(int sx = 0; sx < totalCols; sx++){
+            if (((int)(data1.at<uchar>(sy,sx)) == 255)
+                && ((sx == 1) || ((int)(data1.at<uchar>(sy,sx - 1)) == 0))){
+
+                //When a valid starting point is reached, prepare to track contour
+                int x = sx;
+                int y = sy;
+                data1.at<uchar>(y,x) = (uchar)(MINUS_ONE);
+                data2.at<uchar>(y,x) = 255;
+                int last = 0;
+                int next = getNext(x, y, last, data1, totalRows, totalCols);
+
+                k++;
+
+                // Track contour counter clockwise
+                while (( (int)(data1.at<uchar>(y + dy[next], x + dx[next])) > 100 ) && (k==1)){
+
+                    y = y + dy[next];
+                    x = x + dx[next];
+                    data1.at<uchar>(y,x) = (uchar)(DOS);
+                    data2.at<uchar>(y,x) = 255;
+
+                    last = (next + 4) % 8;
+                    next = getNext(x, y, last, data1, totalRows, totalCols);
+
+                    cv::Point contourPoint = cvPoint(x,y);
+                    contour.push_back(contourPoint);
+
+                }
+            }
+        }
+    }
+
+    imshow("data2", data2);
+
+    return contour;
+
+
+}
+
+
+int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols) {
+    int next = (last + 2) % 8;
+
+    int nx = x + dx[next];
+    int ny = y + dy[next];
+
+    while((next != last) && ((nx < 0) || (nx > totalCols) || (ny < 0) || (ny > totalRows) || ((int)(data.at<uchar>(ny,nx)) == 0))) {
+        next = (next + 1) % 8;
+        nx = x + dx[next];
+        ny = y + dy[next];
+    }
+
+    return next;
+}
+
+std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point> fullContour, int sampleSize) {
+    std::vector<cv::Point> sampledPoints;
+
+    for( int i = 0; i < fullContour.size(); i += (fullContour.size() / sampleSize))
+        sampledPoints.push_back(fullContour[i]);
+
+    return sampledPoints;
+}
+
+
+cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int originalImgRows, int originalImgCols) {
+    IplImage* img = cvCreateImage( cvSize( originalImgRows, originalImgCols ), 8, 1 );
+
+    CvPoint cvPoints[ resultsMatrixX.rows()*(1000) ];
+    /*Calculate all the points in the contour*/
+    int lastX = -1, lastY = -1, uIndex = 0;
+    int eqCount = resultsMatrixX.rows();
+    for(int row = 0; row < eqCount; row++){
+        for(double u=0; u <= 1; u+=0.001){
+            int XCoordinate = (int)(round((resultsMatrixX(row,0)*pow(u,3)) + (resultsMatrixX(row,1)*pow(u,2)) + (resultsMatrixX(row,2)*u) + resultsMatrixX(row,3)));
+            int YCoordinate = (int)(round((resultsMatrixY(row,0)*pow(u,3)) + (resultsMatrixY(row,1)*pow(u,2)) + (resultsMatrixY(row,2)*u) + resultsMatrixY(row,3)));
+
+            if (XCoordinate != lastX && YCoordinate != lastY) {
+                cvPoints[uIndex] = cvPoint(XCoordinate, YCoordinate);
+                uIndex++;
+                lastX = XCoordinate;
+                lastY = YCoordinate;
+            }
+        }
+    }
+
+    /*Draw all the points that were inserted*/
+    for(int j = 0; j <= uIndex; j++) {
+        cvCircle(img, cvPoints[j], 1, CV_RGB(255, 255, 255), 1, 1, 1);
+    }
+
+    return cv::cvarrToMat(img);
+}
+
 #endif //CPSWITHSPLINES_MAIN_H
