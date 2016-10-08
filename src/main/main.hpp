@@ -12,9 +12,6 @@
 #include <iostream>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
-#include <iostream>
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
 #include <opencv2/highgui/highgui.hpp>
 #include <vector>
 #include <opencv2/imgproc.hpp>
@@ -22,7 +19,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
 
 #define MINUS_ONE 99
 #define DOS 150
@@ -40,7 +36,6 @@ cv::Point2d minSum(cv::Mat mat);
 void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample);
 std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> vector, int sample);
 
-void getSortedContour(cv::Mat);
 std::vector<cv::Point> getKuimContour (cv::Mat, int);
 int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
 
