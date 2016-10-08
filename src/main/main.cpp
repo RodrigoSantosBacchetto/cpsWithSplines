@@ -9,36 +9,22 @@ int main() {
 
     double alfa = 1;
     double beta = 1;
-    int sample = 9;
+    int sample = 20;
 
 
-    cv::Mat image= cv::imread("C:\\Users\\Santos\\Desktop\\spoon-4.jpg",0);
+    cv::Mat image= cv::imread("D:\\FP-UNA\\Image Databases\\spoon-1.jpg",0);
     if (!image.data) {
         std::cout << "Image file not found\n";
         return 1;
     }
 
     //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
-    std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i > hir;
-    cv::Mat contourOutput = image.clone();
-    cv::Mat mathEdge;
-    cv::threshold(contourOutput, mathEdge, 192.0, 255.0, CV_THRESH_BINARY_INV);
-    cv::findContours( contourOutput, contours, hir, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE );
-    int pointsNumber = 0;
+    std::vector<cv::Point> fullContour = getKuimContour(image, ONLY_EXTERNAL_CONTOUR);
+    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
 
-    int countContourPoints = 0;
+    MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
 
-    int points = sample;
-
-    double X[points];
-    double Y[points];
-
-    std::vector<cv::Point> contour = extractContourPoints(contours, sample);
-
-    MatrixXd mta = generateCpsWithSplineRefinement(points, contour, contours);
-
-
+    cvWaitKey();
   /*  std::vector<double> dist = smCpsRm( mta, mtb);*/
 }
 
