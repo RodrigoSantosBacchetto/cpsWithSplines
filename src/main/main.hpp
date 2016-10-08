@@ -31,19 +31,22 @@ typedef Eigen::SparseMatrix<double> sMatrix;
 
 /*Functions prototype declaration*/
 void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::vector<cv::Point>> vector);
-cvx::CpsMatrix generateCpsWithSplineRefinement(int points, double X[], double Y[], std::vector<std::vector<cv::Point>> contours);
+MatrixXd generateCpsWithSplineRefinement(int points, std::vector<cv::Point> X,
+                                               std::vector<std::vector<cv::Point>> Y);
 cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
 cv::Point2d minSum(cv::Mat mat);
 void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample);
+std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> vector, int sample);
 
 
 /*Functions implementation*/
+MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area);
+
 /**
  * This method is used to generate the cps matrix, using the cubic spline function constructed with the countour points.
  * TODO: Implement a class with this functions and attributes.
  */
-cvx::CpsMatrix generateCpsWithSplineRefinement(int points, double X[], double Y[],
-                                               std::vector<std::vector<cv::Point>> contours) {
+MatrixXd generateCpsWithSplineRefinement(int points, std::vector<cv::Point> vector, std::vector<std::vector<cv::Point>> contours) {
 
     // Define aux arraysfac
 
@@ -76,8 +79,8 @@ cvx::CpsMatrix generateCpsWithSplineRefinement(int points, double X[], double Y[
         // Build vectors with right-hand values for X and Y
         // -----------------------------------------------------------------------------------
 
-        XRightHand( i ) = 3 * (X[ iPlusOne ] - X[ iMinusOne ]);
-        YRightHand( i ) = 3 * (Y[ iPlusOne ] - Y[ iMinusOne ]);
+        XRightHand( i ) = 3 * (vector[ iPlusOne ].x - vector[ iMinusOne ].x);
+        YRightHand( i ) = 3 * (vector[ iPlusOne ].y - vector[ iMinusOne ].y);
     }
 
     // Compress Sparse matrix -- This is required by the equation solver
@@ -87,28 +90,25 @@ cvx::CpsMatrix generateCpsWithSplineRefinement(int points, double X[], double Y[
     SparseLU<sMatrix> eqSolver;
 
     eqSolver.compute(Coefficients);
-/*    if(eqSolver.info() != Success){
+    if(eqSolver.info() != Success){
         // Matrix decomposition failed!
         std::cout << "There was an error de-composing the matrix" << std::endl << eqSolver.info();
         //XResults << -9999;
-        return -1;
-    }*/
+    }
 
     XResults = eqSolver.solve(XRightHand);
-/*    if(eqSolver.info() != Success){
+   if(eqSolver.info() != Success){
         // Equation solver failed
         std::cout << "There was an error solving the linear system for X" << std::endl << eqSolver.info();
         //XResults << -9999;
-        return -1;
-    }*/
+    }
 
     YResults = eqSolver.solve(YRightHand);
-/*    if(eqSolver.info() != Success){
+    if(eqSolver.info() != Success){
         // Equation solver failed
         std::cout << "There was an error solving the linear system for Y" << std::endl << eqSolver.info();
         //XResults << -9999;
-        return -1;
-    }*/
+    }
 
 
     // Display data and results
@@ -133,53 +133,73 @@ cvx::CpsMatrix generateCpsWithSplineRefinement(int points, double X[], double Y[
 
         jPlusOne = (j+1)%points;
 
-        resultsMatrixX(j,0) = 2 * (X[ j ] - X[ jPlusOne ]) + XResults(j) + XResults(jPlusOne);
-        resultsMatrixX(j,1) = 3 * (X[ jPlusOne ] - X[ j ]) - 2 * XResults(j) - XResults(jPlusOne);
+        resultsMatrixX(j,0) = 2 * (vector[ j ].x - vector[ jPlusOne ].x) + XResults(j) + XResults(jPlusOne);
+        resultsMatrixX(j,1) = 3 * (vector[ jPlusOne ].x - vector[ j ].x) - 2 * XResults(j) - XResults(jPlusOne);
         resultsMatrixX(j,2) = XResults(j);
-        resultsMatrixX(j,3) = X[j];
-        resultsMatrixX(j,4) = X[ jPlusOne ];
+        resultsMatrixX(j,3) = vector[j].x;
+        resultsMatrixX(j,4) = vector[ jPlusOne ].x;
 
-        resultsMatrixY(j,0) = 2 * (Y[ j ] - Y[ jPlusOne ]) + YResults(j) + YResults(jPlusOne);
-        resultsMatrixY(j,1) = 3 * (Y[ jPlusOne ] - Y[ j ]) - 2 * YResults(j) - YResults(jPlusOne);
+        resultsMatrixY(j,0) = 2 * (vector[ j ].y - vector[ jPlusOne ].y) + YResults(j) + YResults(jPlusOne);
+        resultsMatrixY(j,1) = 3 * (vector[ jPlusOne ].y - vector[ j ].y) - 2 * YResults(j) - YResults(jPlusOne);
         resultsMatrixY(j,2) = YResults(j);
-        resultsMatrixY(j,3) = Y[j];
-        resultsMatrixY(j,4) = Y[ jPlusOne ];
+        resultsMatrixY(j,3) = vector[j].y;
+        resultsMatrixY(j,4) = vector[ jPlusOne ].y;
     }
 
 
-    /* Debug function, used to draw the cubic spline using the splines functions*/
+/*    *//* Debug function, used to draw the cubic spline using the splines functions*//*
     drawNow(resultsMatrixX,
             resultsMatrixY,
-            contours);
+            contours);*/
 
     std::cout << "X - Final Matrix:" << std::endl << resultsMatrixX << std::endl;
     std::cout << "Y - Final Matrix:" << std::endl << resultsMatrixY << std::endl;
 
     std::cout << std::endl << resultsMatrixX(0,0) + resultsMatrixX(0,1) + resultsMatrixX(0,2) + resultsMatrixX(0,3);
 
-    /*Convert the sample taked for splines function*/
-    std::vector<cv::Point> newSample;
-    int size = 20;
-    for(int i = 0; i <  20; i+=1){
-        cv::Point_<double> tempPoint = cvPoint2D32f(X[i], Y[i]);
-        newSample.push_back(tempPoint);
+    /* Calculate the area for the contour in order to normalize*/
+    const double area = sqrt(contourArea(vector));
+    return computeCps(vector, area);
+}
+
+/**
+ * Create the cps signature for a specific contour.
+ */
+MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
+    MatrixXd cps(contourPoints.size(),contourPoints.size());
+    MatrixXd aux(contourPoints.size(),contourPoints.size());
+    /*"initialize with "0"*/
+    for(int i=0 ; i <= contourPoints.size() ; i++ ){
+        for(int j=0 ; j <= contourPoints.size() ; j++ ){
+            aux(i,j) = 0;
+        }
+    }
+    /* Calculate the distance between points */
+    for(int i=0 ; i <= contourPoints.size() ; i++ ){
+        for(int j=0 ; j <= contourPoints.size() ; j++ ){
+            if(i<j){
+                aux(i,j) = sqrt((contourPoints[i].x - contourPoints[j].x)^2 + (contourPoints[i].y - contourPoints[j].y)^2);
+                if(aux(i,j)==0){
+                    aux(i,j) = 1;
+                }
+            } else if(i>j){
+                aux(i,j) = aux(j,i);
+            }
+        }
+    }
+    /* we need to rotate the rows i-1 places to the left  and we normalize the values*/
+    for(int i=0 ; i <= contourPoints.size() ; i++ ){
+        for(int j=0 ; j <= contourPoints.size() ; j++ ){
+            if(j+1 > contourPoints.size()){
+                cps(i,j) = 0;
+            }else{
+                cps(i,j) = aux(i,j+1)/sqrt(area);
+            }
+        }
     }
 
-    /**
-     * TODO: translate to english.
-     */
-    // Crea la función que computa el CPS.
-    cvx::CpsEuclidean cps;
-    // Crea dos matrices de CPS. Cada fila es el CPS de un punto sampleado.
-    cvx::CpsEuclidean newCps;
-    // Obtiene el CPS de M=128 puntos, con una definición de M=127 muestras
-    // (se elimina la columna con ceros). La matriz resultante es de 128x127
-    // elementos. Usa un algoritmo rápido que tarda la mitad del tiempo, para
-    // el caso particular en que M=N+1, o sea, cuando el tamaño de muestreo
-    // del contorno (M) es igual al tamaño de  muestreo del CPS (N) aumentado
-    // en una unidad.
-    const double area = sqrt(contourArea(newSample));
-    return cps.full_cps(newSample, 128, 127, area);
+    return cps;
+
 }
 
 /**
@@ -205,9 +225,28 @@ void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::
     }
 
     /* Draw all the points in the image*/
-    for(int i = 0; i <  contours.size(); i++){
-        cvCircle(img, cvPoint(contours[i][0].x,contours[i][0].y),1,CV_RGB(250,244,227),3,1,1);
+    int countContourPoints = 0;
+    for(int i = 0; i < contours.size(); i++){
+        for(int j = 0; j < contours[i].size(); j++) {
+            if(contours[i][j].x > 10000 || contours[i][j].x < -1)
+                break;
+            countContourPoints++;
+        }
     }
+    int dist = 1;
+    int flag = 1;
+    for(int i = 0; i < contours.size(); i++){
+        for(int j = 0; j < contours[i].size(); j++) {
+            if(contours[i][j].x > 2000 || contours[i][j].x < -1 || contours[i][j].y > 2000 || contours[i][j].y < -1)
+                break;
+            if(dist == flag) {
+                cvCircle(img, cvPoint(contours[i][j].x,contours[i][j].y),1,CV_RGB(250,244,227),3,1,1);
+                flag = 0;
+            }
+            flag++;
+        }
+    }
+
 
 
     cvShowImage("Image",img);
@@ -281,12 +320,62 @@ cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB){
  */
 void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample) {
     int pointsNumber = 0;
-    for(int i = 0; i < contours.size(); i= i + (int)(contours.size() / sample)){
-        std::cout << "X" + i << std::endl << contours[i][0].x << std::endl;
-        X[pointsNumber] = contours[i][0].x;
-        Y[pointsNumber] = contours[i][0].y;
-        std::cout << "Y" + i << std::endl << contours[i][0].y << std::endl;
-        pointsNumber++;
+    int countContourPoints = 0;
+    for(int i = 0; i < contours.size(); i++){
+        for(int j = 0; j < contours[i].size(); j++) {
+            if(contours[i][j].x > 10000 || contours[i][j].x < -1)
+                break;
+            countContourPoints++;
+        }
     }
+    int dist = countContourPoints/sample;
+    int flag = countContourPoints/sample;
+    for(int i = 0; i < contours.size(); i++){
+        for(int j = 0; j < contours[i].size(); j++) {
+            if(contours[i][j].x > 2000 || contours[i][j].x < -1 || contours[i][j].y > 2000 || contours[i][j].y < -1)
+                break;
+            if(dist == flag) {
+                X[pointsNumber] = contours[i][j].x;
+                Y[pointsNumber] = contours[i][j].y;
+                pointsNumber++;
+                flag = 0;
+            }
+            flag++;
+        }
+    }
+}
+
+/**
+ * This method convert a contour of points into a vector of points.
+ */
+std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> contours, int sample) {
+    std::vector<cv::Point> newSample;
+    int pointsNumber = 0;
+    int countContourPoints = 0;
+    for(int i = 0; i < contours.size(); i++){
+        for(int j = 0; j < contours[i].size(); j++) {
+            if(contours[i][j].x > 10000 || contours[i][j].x < -1)
+                break;
+            countContourPoints++;
+        }
+    }
+    int dist = countContourPoints/sample;
+    int flag = countContourPoints/sample;
+    for(int i = 0; i < contours.size(); i++){
+        for(int j = 0; j < contours[i].size(); j++) {
+            if(contours[i][j].x > 2000 || contours[i][j].x < -1 || contours[i][j].y > 2000 || contours[i][j].y < -1)
+                break;
+            if(dist == flag) {
+                std::cout << "X - Right Hand:" << std::endl << contours[i][j].x << std::endl;
+                std::cout << "X - Results:" << std::endl << contours[i][j].y << std::endl;
+                cv::Point_<double> tempPoint = cvPoint2D32f(contours[i][j].x, contours[i][j].y);
+                newSample.push_back(tempPoint);
+                pointsNumber++;
+                flag = 0;
+            }
+            flag++;
+        }
+    }
+    return newSample;
 }
 #endif //CPSWITHSPLINES_MAIN_H
