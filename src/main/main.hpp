@@ -171,8 +171,8 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
     cv::Mat testImg = generateSplineBasedFigure(resultsMatrixX, resultsMatrixY, 500, 500);
     imshow("FinalSplineBasedImage",testImg);
     /* Calculate the area for the contour in order to normalize*/
-//    const double area = sqrt(contourArea(vector));
-//    return computeCps(vector, area);
+    const double area = sqrt(contourArea(vector));
+    return computeCps(vector, area);
 }
 
 /**
@@ -182,14 +182,14 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
     MatrixXd cps(contourPoints.size(),contourPoints.size());
     MatrixXd aux(contourPoints.size(),contourPoints.size());
     /*"initialize with "0"*/
-    for(int i=0 ; i <= contourPoints.size() ; i++ ){
-        for(int j=0 ; j <= contourPoints.size() ; j++ ){
+    for(int i=0 ; i < contourPoints.size() ; i++ ){
+        for(int j=0 ; j < contourPoints.size() ; j++ ){
             aux(i,j) = 0;
         }
     }
     /* Calculate the distance between points */
-    for(int i=0 ; i <= contourPoints.size() ; i++ ){
-        for(int j=0 ; j <= contourPoints.size() ; j++ ){
+    for(int i=0 ; i < contourPoints.size() ; i++ ){
+        for(int j=0 ; j < contourPoints.size() ; j++ ){
             if(i<j){
                 aux(i,j) = sqrt((contourPoints[i].x - contourPoints[j].x)^2 + (contourPoints[i].y - contourPoints[j].y)^2);
                 if(aux(i,j)==0){
@@ -201,9 +201,9 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
         }
     }
     /* we need to rotate the rows i-1 places to the left  and we normalize the values*/
-    for(int i=0 ; i <= contourPoints.size() ; i++ ){
-        for(int j=0 ; j <= contourPoints.size() ; j++ ){
-            if(j+1 > contourPoints.size()){
+    for(int i=0 ; i < contourPoints.size() ; i++ ){
+        for(int j=0 ; j < contourPoints.size() ; j++ ){
+            if(j+1 >= contourPoints.size()){
                 cps(i,j) = 0;
             }else{
                 cps(i,j) = aux(i,j+1)/sqrt(area);
