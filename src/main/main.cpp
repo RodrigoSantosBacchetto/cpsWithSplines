@@ -12,14 +12,19 @@ int main() {
     int sample = 20;
 
 
-    cv::Mat image= cv::imread("C:\\Users\\Santos\\Desktop\\spoon-4.jpg",0);
-    if (!image.data) {
-        std::cout << "Image file not found\n";
-        return 1;
-    }
+//    cv::Mat image= cv::imread("C:\\Users\\Santos\\Desktop\\spoon-4.jpg",0);
+//    if (!image.data) {
+//        std::cout << "Image file not found\n";
+//        return 1;
+//      }
+
+    std::string directoryName = "D:\\FP-UNA\\Image Databases\\Pruebas\\";
+    std::vector<cv::Mat> allImages = readImagesFromDirectory(directoryName);
+    imshow("TEST",allImages[0]);
+
 
     //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
-    std::vector<cv::Point> fullContour = getKuimContour(image, ONLY_EXTERNAL_CONTOUR);
+    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
     std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
 
     MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
@@ -29,6 +34,7 @@ int main() {
     /* the second value is the max distance between two matrix*/
     /* the third value is the promedian distance between two matrix*/
     std::vector<double> dist = smCpsRm( mta, mtb);
+    cvWaitKey();
 }
 
 

@@ -20,6 +20,8 @@
 #include <cstdlib>
 #include <fstream>
 
+#include "dirent.h"
+
 #define MINUS_ONE 99
 #define DOS 150
 #define ONLY_EXTERNAL_CONTOUR 1
@@ -41,7 +43,7 @@ std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point>, int);
 int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
 
 std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int sampleSize);
-
+std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath);
 //only for debug
 cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int , int );
 
@@ -509,5 +511,37 @@ cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatri
 
     return cv::cvarrToMat(img);
 }
+
+std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath) {
+    DIR *dir;
+    struct dirent *imageFile;
+
+    std::vector<cv::Mat> allImages;
+
+    std::cout << "Image directory: " << directoryFullPath << std::endl << std::endl << "Image Paths:" << std::endl;
+
+    if ((dir = opendir(directoryFullPath.c_str())) != NULL) {
+    /* print all the files and directories within directory */
+        while ((imageFile = readdir(dir)) != NULL) {
+            std::string imageFileName = std::string(imageFile->d_name, imageFile->d_namlen);
+            if (imageFileName.compare(".") != 0 && imageFileName.compare("..") != 0) {
+                std::string imagePath = directoryFullPath;
+                imagePath += std::string(imageFile->d_name, imageFile->d_namlen);
+
+                std::cout << " -> " << imagePath << std::endl;
+
+                cv::Mat currentImage = cv::imread(imagePath, 0);
+                allImages.push_back(currentImage);
+            }
+        }
+        closedir(dir);
+    } else {
+    /* could not open directory */
+        perror("");
+    }
+
+    return allImages;
+}
+
 
 #endif //CPSWITHSPLINES_MAIN_H
