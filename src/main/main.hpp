@@ -40,6 +40,8 @@ std::vector<cv::Point> getKuimContour (cv::Mat, int);
 std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point>, int);
 int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
 
+std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int sampleSize);
+
 //only for debug
 cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int , int );
 
@@ -169,10 +171,11 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
 
 
     cv::Mat testImg = generateSplineBasedFigure(resultsMatrixX, resultsMatrixY, 500, 500);
+    std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
     imshow("FinalSplineBasedImage",testImg);
     /* Calculate the area for the contour in order to normalize*/
-    const double area = sqrt(contourArea(vector));
-    return computeCps(vector, area);
+    const double area = sqrt(contourArea(pointsFromSpline));
+    return computeCps(pointsFromSpline, area);
 }
 
 /**
@@ -373,7 +376,7 @@ std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContour
 
     // add black borders to our image
     imshow("beforeBorder",data1);
-    copyMakeBorder(data1, data1, 2, 2, 2, 2, CV_HAL_BORDER_CONSTANT, CV_RGB(0,0,0) );
+    copyMakeBorder(data1, data1, 2, 2, 2, 2, IPL_BORDER_CONSTANT, CV_RGB(0,0,0) );
     imshow("aferBorder",data1);
 
     int totalRows = data1.rows;
@@ -450,6 +453,32 @@ std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point> fullContour, i
     return sampledPoints;
 }
 
+std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int sampleSize) {
+
+    std::vector<cv::Point> allSplinePoints;
+
+    /*Calculate all the points in the contour*/
+    int lastX = -1, lastY = -1;
+    int eqCount = resultsMatrixX.rows();
+    for(int row = 0; row < eqCount; row++){
+        for(double u=0; u <= 1; u+=0.001){
+            int XCoordinate = (int)(round((resultsMatrixX(row,0)*pow(u,3)) + (resultsMatrixX(row,1)*pow(u,2)) + (resultsMatrixX(row,2)*u) + resultsMatrixX(row,3)));
+            int YCoordinate = (int)(round((resultsMatrixY(row,0)*pow(u,3)) + (resultsMatrixY(row,1)*pow(u,2)) + (resultsMatrixY(row,2)*u) + resultsMatrixY(row,3)));
+
+            if (XCoordinate != lastX && YCoordinate != lastY) {
+                lastX = XCoordinate;
+                lastY = YCoordinate;
+                allSplinePoints.push_back(cvPoint(XCoordinate, YCoordinate));
+            }
+        }
+    }
+
+    std::vector<cv::Point> sampledPoints;
+    for( int i = 0; i < allSplinePoints.size(); i += (allSplinePoints.size() / sampleSize))
+        sampledPoints.push_back(allSplinePoints[i]);
+
+    return sampledPoints;
+}
 
 cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int originalImgRows, int originalImgCols) {
     IplImage* img = cvCreateImage( cvSize( originalImgRows, originalImgCols ), 8, 1 );
