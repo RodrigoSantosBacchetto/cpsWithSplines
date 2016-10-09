@@ -173,6 +173,7 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
     cv::Mat testImg = generateSplineBasedFigure(resultsMatrixX, resultsMatrixY, 500, 500);
     std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
     imshow("FinalSplineBasedImage",testImg);
+    cvWaitKey( 0 );
     /* Calculate the area for the contour in order to normalize*/
     const double area = sqrt(contourArea(pointsFromSpline));
     return computeCps(pointsFromSpline, area);
@@ -194,7 +195,7 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
     for(int i=0 ; i < contourPoints.size() ; i++ ){
         for(int j=0 ; j < contourPoints.size() ; j++ ){
             if(i<j){
-                aux(i,j) = sqrt((contourPoints[i].x - contourPoints[j].x)^2 + (contourPoints[i].y - contourPoints[j].y)^2);
+                aux(i,j) = sqrt((contourPoints[i].x - contourPoints[j].x)*(contourPoints[i].x - contourPoints[j].x) + (contourPoints[i].y - contourPoints[j].y)*(contourPoints[i].y - contourPoints[j].y));
                 if(aux(i,j)==0){
                     aux(i,j) = 1;
                 }
@@ -206,10 +207,10 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
     /* we need to rotate the rows i-1 places to the left  and we normalize the values*/
     for(int i=0 ; i < contourPoints.size() ; i++ ){
         for(int j=0 ; j < contourPoints.size() ; j++ ){
-            if(j+1 >= contourPoints.size()){
-                cps(i,j) = 0;
+            if(j+1+i>= contourPoints.size()){
+                cps(i,j) = aux(i,j+1+i - contourPoints.size())/sqrt(area);
             }else{
-                cps(i,j) = aux(i,j+1)/sqrt(area);
+                cps(i,j) = aux(i,j+1+i)/sqrt(area);
             }
         }
     }
