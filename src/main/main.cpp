@@ -60,7 +60,7 @@ std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
         for(int i = 0; i <  n; i++) {
             double sumDist = 0;
             for(int j = 0; j <  n; j++) {
-                sumDist += pow(mta(i,j)-mtb(vector[i],j),2);
+                sumDist += (mta(i,j)-mtb(vector[i],j)) * (mta(i,j)-mtb(vector[i],j));
             }
             matrix[i][k] = sqrt(sumDist);
         }
