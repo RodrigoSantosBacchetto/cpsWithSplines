@@ -277,15 +277,15 @@ void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::
  * This method is used to get the column that has the minum sum value(saved in X) and the index of that column(saved on Y).
  * X is the result value of the metric dist_1.
  */
-cv::Point2d minSum(std::vector<std::vector<double> > mat) {
+cv::Point2d minSum(MatrixXd mat) {
     /*We get the sum of the values for each column*/
     std::vector<double> vector;
-    for(double j = 0; j <  mat[0].size(); j++) {
+    for(double j = 0; j <  mat.cols(); j++) {
         double sum = 0 ;
-        for (double i = 0 ; i < mat.size() ; i++) {
-            sum += mat[i][j];
+        for (double i = 0 ; i < mat.rows() ; i++) {
+            sum += mat(i,j);
         }
-        vector[j] = sum;
+        vector.push_back(sum);
     }
     /*We get the minum value in the vector and the index of that value which represents the column of the matrix with the minum value*/
     double min = vector[0];
@@ -308,7 +308,7 @@ cv::Point2d minSum(std::vector<std::vector<double> > mat) {
 cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB){
     /* Number of point samples*/
     double n = cpsA.data().rows;
-    std::vector<std::vector<double> > matrix;
+    MatrixXd matrix;
 
 
     /* Each value of k represent a different rotation*/
@@ -325,7 +325,7 @@ cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB){
             for(int j = 0; j <  n; j++) {
                 sumDist += pow(cpsA.data()[i,j]-cpsB.data()[vector[i],j],2);
             }
-            matrix[i][k] = sqrt(sumDist);
+            matrix(i,k) = sqrt(sumDist);
         }
         vectorIndex = 0;
     }
