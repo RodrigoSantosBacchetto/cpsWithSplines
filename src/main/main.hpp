@@ -478,8 +478,9 @@ std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd 
 
     std::vector<cv::Point> sampledPoints;
     for( int i = 0; i < allSplinePoints.size(); i += (allSplinePoints.size() / sampleSize))
-        sampledPoints.push_back(allSplinePoints[i]);
-
+        if(sampledPoints.size()<=sampleSize) {
+            sampledPoints.push_back(allSplinePoints[i]);
+        }
     return sampledPoints;
 }
 
