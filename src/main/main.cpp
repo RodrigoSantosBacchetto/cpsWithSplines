@@ -118,13 +118,13 @@ std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
     cv::Point2d matchingData = minSum(matrix);
     result.push_back(matchingData.y);
     result.push_back(matchingData.x/mta.rows());
-    double minValue = matrix(0,matchingData.y);
+    double maxValue = matrix(0,matchingData.y);
     for(int i = 0; i <  n; i++) {
-        if(matrix(i,matchingData.y)<minValue){
-            minValue = matrix(i,matchingData.y);
+        if(matrix(i,matchingData.y)>maxValue){
+            maxValue = matrix(i,matchingData.y);
         }
     }
-    result.push_back(minValue);
+    result.push_back(maxValue);
 
     return result;
 }

@@ -423,9 +423,10 @@ int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols) 
 std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point> fullContour, int sampleSize) {
     std::vector<cv::Point> sampledPoints;
 
-    for( int i = 0; i < fullContour.size(); i += (fullContour.size() / sampleSize))
-        if (sampledPoints.size() < sampleSize)  {
-            sampledPoints.push_back(fullContour[i]);
+    double delta = (double)fullContour.size() / (double)sampleSize;
+    for( double i = 0; i < fullContour.size(); i += delta)
+        if(sampledPoints.size()<sampleSize) {
+            sampledPoints.push_back(fullContour[round(i)]);
         }
 
     return sampledPoints;
@@ -452,9 +453,10 @@ std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd 
     }
 
     std::vector<cv::Point> sampledPoints;
-    for( int i = 0; i < allSplinePoints.size(); i += (allSplinePoints.size() / sampleSize))
-        if(sampledPoints.size() < sampleSize) {
-            sampledPoints.push_back(allSplinePoints[i]);
+    double delta = (double)allSplinePoints.size() / (double)sampleSize;
+    for( double i = 0; i < allSplinePoints.size(); i += delta)
+        if(sampledPoints.size()<sampleSize) {
+            sampledPoints.push_back(allSplinePoints[round(i)]);
         }
     return sampledPoints;
 }
