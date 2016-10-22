@@ -29,7 +29,7 @@ int main() {
     double beta = 1;
     int sample = 20;
 
-    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
+    std::string parentDirectory = "D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
     std::vector<classResults> resultsByClass;
@@ -38,7 +38,7 @@ int main() {
         classResults currentResult;
 
         //Store class name
-        currentResult.class_name = imageClassesDirectories[i];
+        currentResult.class_name = getClassNameFromPath(imageClassesDirectories[i]);
 
         //Read all class images
         currentResult.images = readImagesFromDirectory(imageClassesDirectories[i]);
@@ -72,11 +72,11 @@ int main() {
 
             sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
-            currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
+            currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
 
             sampledPoints = sampleContourPoints(fullContourSimilar, 128);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
-            currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
+            currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
 
             /*Different image*/
             std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+1+(currentResult.images.size()-1)/2], ONLY_EXTERNAL_CONTOUR);
@@ -87,11 +87,11 @@ int main() {
 
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
             cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDifferent)[1]);
+            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDifferent)[1]);
 
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
             cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent);
-            currentResult.diff_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDifferent)[1]);
+            currentResult.diff_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrixDifferent)[1]);
         }
 
         resultsByClass.push_back(currentResult);
@@ -99,11 +99,34 @@ int main() {
         std::cout << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
     }
 
-    for(int i = 0; i < imageClassesDirectories.size(); i++) {
+    std::fstream outputFile;
+    outputFile.open("D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\output.csv", std::ios_base::out);
+
+    outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
+
+    for(int i = 0; i < resultsByClass.size(); i++) {
+
+        outputFile << resultsByClass[i].class_name << "\t";
+
         /* Get the max value and min value for a vector of double */
-        double valueDiff = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
-        double valueSame = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+        double valueDiff32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
+        double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+
+        outputFile << valueSame32 << "\t" << valueDiff32 << "\t";
+
+        double valueDiff64 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
+        double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
+
+        outputFile << valueSame64 << "\t" << valueDiff64 << "\t";
+
+        double valueDiff128 = getMaxMinValue(resultsByClass[i].diff_class_distances_128 , "min");
+        double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_128 , "max");
+
+        outputFile << valueSame128 << "\t" << valueDiff128 << std::endl;
+
     }
+
+    outputFile.close();
 //    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
 //    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
 //    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);

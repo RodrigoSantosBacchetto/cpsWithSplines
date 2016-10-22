@@ -55,6 +55,7 @@ int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
 
 /*Functions implementation*/
 MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area);
+std::string getClassNameFromPath(std::string fullPath);
 
 /**
  * This method is used to generate the cps matrix, using the cubic spline function constructed with the countour points.
@@ -592,15 +593,30 @@ std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
     /*the X(METRIC 1) coordenate is the minim sum and the Y cordenate is the index of that column on the matrix cpsA*/
     cv::Point2d matchingData = minSum(matrix);
     result.push_back(matchingData.y);
-    result.push_back(matchingData.x/mta.rows());
     double maxValue = matrix(0,matchingData.y);
     for(int i = 0; i <  n; i++) {
         if(matrix(i,matchingData.y)>maxValue){
             maxValue = matrix(i,matchingData.y);
         }
     }
-    result.push_back(maxValue);
+    result.push_back(maxValue / n);
+    result.push_back((matchingData.x/mta.rows()) / n);
 
     return result;
 }
+
+
+std::string getClassNameFromPath(std::string fullPath){
+
+    std::stringstream ss(fullPath);
+    std::string token, lastToken;
+    char delim = '\\';
+
+    while(getline(ss, token, delim)) {
+        lastToken = token;
+    }
+
+    return lastToken;
+}
+
 #endif //CPSWITHSPLINES_MAIN_H
