@@ -424,7 +424,9 @@ std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point> fullContour, i
     std::vector<cv::Point> sampledPoints;
 
     for( int i = 0; i < fullContour.size(); i += (fullContour.size() / sampleSize))
-        sampledPoints.push_back(fullContour[i]);
+        if (sampledPoints.size() < sampleSize)  {
+            sampledPoints.push_back(fullContour[i]);
+        }
 
     return sampledPoints;
 }
@@ -451,7 +453,7 @@ std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd 
 
     std::vector<cv::Point> sampledPoints;
     for( int i = 0; i < allSplinePoints.size(); i += (allSplinePoints.size() / sampleSize))
-        if(sampledPoints.size()<=sampleSize) {
+        if(sampledPoints.size() < sampleSize) {
             sampledPoints.push_back(allSplinePoints[i]);
         }
     return sampledPoints;
