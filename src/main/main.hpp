@@ -125,15 +125,6 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
     }
 
 
-    // Display data and results
-    std::cout << "Coefficients matrix:" << std::endl << Coefficients << std::endl;
-
-    std::cout << "X - Right Hand:" << std::endl << XRightHand << std::endl;
-    std::cout << "X - Results:" << std::endl << XResults << std::endl;
-
-    std::cout << "Y - Right Hand:" << std::endl << YRightHand << std::endl;
-    std::cout << "Y - Results:" << std::endl << YResults << std::endl;
-
     // Build return matrix
     //      --> Col 0: cubic coefficient
     //      --> Col 1: quadratic coefficient
@@ -161,21 +152,9 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
     }
 
 
-/*    *//* Debug function, used to draw the cubic spline using the splines functions*//*
-    drawNow(resultsMatrixX,
-            resultsMatrixY,
-            contours);*/
 
-    std::cout << "X - Final Matrix:" << std::endl << resultsMatrixX << std::endl;
-    std::cout << "Y - Final Matrix:" << std::endl << resultsMatrixY << std::endl;
-
-    std::cout << std::endl << resultsMatrixX(0,0) + resultsMatrixX(0,1) + resultsMatrixX(0,2) + resultsMatrixX(0,3);
-
-
-    cv::Mat testImg = generateSplineBasedFigure(resultsMatrixX, resultsMatrixY, 500, 500);
     std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
-    imshow("FinalSplineBasedImage",testImg);
-    cvWaitKey( 0 );
+
     /* Calculate the area for the contour in order to normalize*/
     const double area = sqrt(contourArea(pointsFromSpline));
     return computeCps(pointsFromSpline, area);
@@ -356,8 +335,6 @@ std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> 
             if(contours[i][j].x > 2000 || contours[i][j].x < -1 || contours[i][j].y > 2000 || contours[i][j].y < -1)
                 break;
             if(dist == flag) {
-                std::cout << "X - Right Hand:" << std::endl << contours[i][j].x << std::endl;
-                std::cout << "X - Results:" << std::endl << contours[i][j].y << std::endl;
                 cv::Point_<double> tempPoint = cvPoint2D32f(contours[i][j].x, contours[i][j].y);
                 newSample.push_back(tempPoint);
                 pointsNumber++;
@@ -519,17 +496,13 @@ std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath) {
 
     std::vector<cv::Mat> allImages;
 
-    std::cout << "Image directory: " << directoryFullPath << std::endl << std::endl << "Image Paths:" << std::endl;
-
     if ((dir = opendir(directoryFullPath.c_str())) != NULL) {
-    /* print all the files and directories within directory */
         while ((imageFile = readdir(dir)) != NULL) {
             std::string imageFileName = std::string(imageFile->d_name, imageFile->d_namlen);
             if (imageFileName.compare(".") != 0 && imageFileName.compare("..") != 0) {
                 std::string imagePath = directoryFullPath;
                 imagePath += std::string(imageFile->d_name, imageFile->d_namlen);
 
-                std::cout << " -> " << imagePath << std::endl;
 
                 cv::Mat currentImage = cv::imread(imagePath, 0);
                 allImages.push_back(currentImage);
@@ -544,5 +517,30 @@ std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath) {
     return allImages;
 }
 
+std::vector<std::string> getClassDirectories(std::string directoryFullPath) {
+    DIR *dir;
+    struct dirent *classFolder;
+
+    std::vector<std::string> allClasses;
+
+    if ((dir = opendir(directoryFullPath.c_str())) != NULL) {
+        while ((classFolder = readdir(dir)) != NULL) {
+            std::string classFolderName = std::string(classFolder->d_name, classFolder->d_namlen);
+            if (classFolder->d_type == DT_DIR && classFolderName.compare(".") != 0 && classFolderName.compare("..") != 0) {
+                std::string classPath = directoryFullPath;
+                classPath += std::string(classFolder->d_name, classFolder->d_namlen);
+                classPath += "\\";
+
+                allClasses.push_back(classPath);
+            }
+        }
+        closedir(dir);
+    } else {
+        /* could not open directory */
+        perror("");
+    }
+
+    return allClasses;
+}
 
 #endif //CPSWITHSPLINES_MAIN_H
