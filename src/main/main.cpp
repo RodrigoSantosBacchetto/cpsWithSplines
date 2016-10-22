@@ -5,35 +5,82 @@
 
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 
+typedef struct classResults {
+    std::string class_name;
+    std::vector<cv::Mat> images;
+
+    std::vector<MatrixXd> cp_signatures_32; // n
+    std::vector<double> same_class_distances_32; // (n-1) / 2
+    std::vector<double> diff_class_distances_32; // (n-1) / 2
+
+    std::vector<MatrixXd> cp_signatures_64;
+    std::vector<double> same_class_distances_64;
+    std::vector<double> diff_class_distances_64;
+
+    std::vector<MatrixXd> cp_signatures_128;
+    std::vector<double> same_class_distances_128;
+    std::vector<double> diff_class_distances_128;
+
+} classResults;
+
 int main() {
 
     double alfa = 1;
     double beta = 1;
     int sample = 20;
 
+    std::string parentDirectory = "D:\\FP-UNA\\Image Databases\\ForExperiments\\EXP01_splitByClasses\\";
+    std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
-//    cv::Mat image= cv::imread("C:\\Users\\Santos\\Desktop\\spoon-4.jpg",0);
-//    if (!image.data) {
-//        std::cout << "Image file not found\n";
-//        return 1;
-//      }
+    std::vector<classResults> resultsByClass;
+    //Explore class folders
+    for(int i = 0; i < imageClassesDirectories.size(); i++){
+        classResults currentResult;
 
-    std::string directoryName = "D:\\FP-UNA\\Image Databases\\Pruebas\\";
-    std::vector<cv::Mat> allImages = readImagesFromDirectory(directoryName);
-    imshow("TEST",allImages[0]);
+        //Store class name
+        currentResult.class_name = imageClassesDirectories[i];
+
+        //Read all class images
+        currentResult.images = readImagesFromDirectory(imageClassesDirectories[i]);
+
+        //Compute results for each image of the class
+        std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
+        int asd = currentResult.images.size();
+        for(int j = 0; j < asd; j++){
+            std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
 
-    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
-    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
-    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+            MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+            currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-    MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
-    MatrixXd mtb = generateCpsWithSplineRefinement(sampledPoints);
+            sampledPoints = sampleContourPoints(fullContour, 64);
+            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+            currentResult.cp_signatures_64.push_back(cpsMatrix);
 
-    /* the first value is de column index with the minimu sum*/
-    /* the second value is the max distance between two matrix*/
-    /* the third value is the promedian distance between two matrix*/
-    std::vector<double> dist = smCpsRm( mta, mtb);
+            sampledPoints = sampleContourPoints(fullContour, 128);
+            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+            currentResult.cp_signatures_128.push_back(cpsMatrix);
+
+
+        }
+
+        resultsByClass.push_back(currentResult);
+
+        std::cout << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
+    }
+
+//    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
+//    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
+//    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
+//
+//    MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
+//    MatrixXd mtb = generateCpsWithSplineRefinement(sampledPoints);
+//
+//    /* the first value is the column index with the minimum sum*/
+//    /* the second value is the max distance between two matrix*/
+//    /* the third value is the promedian distance between two matrix*/
+//    std::vector<double> dist = smCpsRm( mta, mtb);
     cvWaitKey();
 }
 
