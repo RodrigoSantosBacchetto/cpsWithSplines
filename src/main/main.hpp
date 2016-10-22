@@ -355,14 +355,12 @@ std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContour
     int i = 0, j = 0, k = numberOfContours - 1;
 
     // add black borders to our image
-    imshow("beforeBorder",data1);
     copyMakeBorder(data1, data1, 2, 2, 2, 2, IPL_BORDER_CONSTANT, CV_RGB(0,0,0) );
-    imshow("aferBorder",data1);
 
     int totalRows = data1.rows;
     int totalCols = data1.cols;
 
-    IplImage* allBlack = cvCreateImage(cvSize(totalRows, totalCols), 8, 1);
+    IplImage* allBlack = cvCreateImage(cvSize(totalCols, totalRows), 8, 1);
     cvSetZero(allBlack);
     cv::Mat data2 = cv::cvarrToMat(allBlack);
 
@@ -400,8 +398,6 @@ std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContour
             }
         }
     }
-
-    imshow("data2", data2);
 
     return contour;
 
