@@ -48,7 +48,7 @@ std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath);
 cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int , int );
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 
-double getMaxMinValue(std::vector<double> vector, const char string[4]);
+double getMaxMinValue(std::vector<double> vector,std::string valueType);
 
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
