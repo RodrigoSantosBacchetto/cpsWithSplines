@@ -46,7 +46,9 @@ std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd 
 std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath);
 //only for debug
 cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int , int );
+std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 
+double getMaxMinValue(std::vector<double> vector, const char string[4]);
 
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
@@ -543,4 +545,62 @@ std::vector<std::string> getClassDirectories(std::string directoryFullPath) {
     return allClasses;
 }
 
+/**
+ * This method get the max or min value on a vector of doubles.
+ */
+double getMaxMinValue(std::vector<double> vector, std::string valueType) {
+    double tempVal = vector[0];
+    for(int i = 0; i < vector.size(); i++){
+        if("min"==valueType && tempVal>vector[i]){
+            tempVal = vector[i];
+        } else if("max"==valueType && tempVal<vector[i]){
+            tempVal = vector[i];
+        }
+    }
+    return tempVal;
+}
+
+
+/**
+ * This method get the distance between two cps matrix.
+ */
+std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
+    std::vector<double> result;
+    /* Number of point samples*/
+    double n = mta.rows();
+    MatrixXd matrix((int)n,(int)n);
+
+    /*Each value of k represent a different rotation*/
+    for(int k = 0; k <  n; k++) {
+        std::vector<int> vector;
+        for (double u = k - 1; u < n-1 + k; u++) {
+            if(u >= n-1)
+                vector.push_back((int)fmod( u , n-1));
+            else
+                vector.push_back((int)fmod( u , n-1)+1);
+
+        }
+        /*Calculate the euclidian distance*/
+        for(int i = 0; i <  n; i++) {
+            double sumDist = 0;
+            for(int j = 0; j < n; j++) {
+                sumDist += (mta(i,j)-mtb(vector[i],j)) * (mta(i,j)-mtb(vector[i],j));
+            }
+            matrix(i,k) = sqrt(sumDist);
+        }
+    }
+    /*the X(METRIC 1) coordenate is the minim sum and the Y cordenate is the index of that column on the matrix cpsA*/
+    cv::Point2d matchingData = minSum(matrix);
+    result.push_back(matchingData.y);
+    result.push_back(matchingData.x/mta.rows());
+    double maxValue = matrix(0,matchingData.y);
+    for(int i = 0; i <  n; i++) {
+        if(matrix(i,matchingData.y)>maxValue){
+            maxValue = matrix(i,matchingData.y);
+        }
+    }
+    result.push_back(maxValue);
+
+    return result;
+}
 #endif //CPSWITHSPLINES_MAIN_H
