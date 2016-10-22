@@ -5,6 +5,8 @@
 
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 
+double getMaxMinValue(std::vector<double> vector, const char string[4]);
+
 typedef struct classResults {
     std::string class_name;
     std::vector<cv::Mat> images;
@@ -99,6 +101,11 @@ int main() {
         std::cout << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
     }
 
+    for(int i = 0; i < imageClassesDirectories.size(); i++) {
+        /* Get the max value and min value for a vector of double */
+        double valueDiff = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
+        double valueSame = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+    }
 //    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
 //    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
 //    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
@@ -113,6 +120,20 @@ int main() {
     cvWaitKey();
 }
 
+/**
+ * This method get the max or min value on a vector of doubles.
+ */
+double getMaxMinValue(std::vector<double> vector, std::string valueType) {
+    double tempVal = vector[0];
+    for(int i = 0; i < vector.size(); i++){
+        if("min"==valueType && tempVal>vector[i]){
+            tempVal = vector[i];
+        } else if("max"==valueType && tempVal<vector[i]){
+            tempVal = vector[i];
+        }
+    }
+    return tempVal;
+}
 
 
 /**
