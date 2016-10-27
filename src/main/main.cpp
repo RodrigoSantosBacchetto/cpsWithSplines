@@ -51,46 +51,54 @@ int main() {
             if(j==0) {
                 std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
+                /* Calculate the area for the contour in order to normalize*/
+                const double area = sqrt(contourArea(fullContour));
                 std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
-                MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+                MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
                 sampledPoints = sampleContourPoints(fullContour, 64);
-                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
                 sampledPoints = sampleContourPoints(fullContour, 128);
-                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
             }
             /*Similar image*/
             std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
 
+            /* Calculate the area for the contour in order to normalize*/
+            const double areaSimilar = sqrt(contourArea(fullContourSimilar));
+
             std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
-            MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+            MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
 
             sampledPoints = sampleContourPoints(fullContourSimilar, 64);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
 
             sampledPoints = sampleContourPoints(fullContourSimilar, 128);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints);
+            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
 
             /*Different image*/
             std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+1+(currentResult.images.size()-1)/2], ONLY_EXTERNAL_CONTOUR);
 
+            /* Calculate the area for the contour in order to normalize*/
+            const double areaDifferen = sqrt(contourArea(fullContourDifferent));
+
             std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
-            MatrixXd cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent);
+            MatrixXd cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
             currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDifferent)[1]);
 
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
-            cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent);
+            cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
             currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDifferent)[1]);
 
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
-            cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent);
+            cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
             currentResult.diff_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrixDifferent)[1]);
         }
 

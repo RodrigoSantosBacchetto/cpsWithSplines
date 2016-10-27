@@ -32,7 +32,7 @@ typedef Eigen::SparseMatrix<double> sMatrix;
 
 /*Functions prototype declaration*/
 void drawNow(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, std::vector<std::vector<cv::Point>> vector);
-MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> X);
+MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> X, const double area);
 cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
 cv::Point2d minSum(cv::Mat mat);
 void convertPoints(double X[], double Y[], std::vector<std::vector<cv::Point>> contours, int sample);
@@ -61,7 +61,7 @@ std::string getClassNameFromPath(std::string fullPath);
  * This method is used to generate the cps matrix, using the cubic spline function constructed with the countour points.
  * TODO: Implement a class with this functions and attributes.
  */
-MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
+MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const double area) {
 
     // Define aux arraysfac
 
@@ -158,8 +158,6 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector) {
 
     std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
 
-    /* Calculate the area for the contour in order to normalize*/
-    const double area = sqrt(contourArea(pointsFromSpline));
     return computeCps(pointsFromSpline, area);
 }
 
