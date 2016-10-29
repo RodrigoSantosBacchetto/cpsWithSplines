@@ -597,8 +597,8 @@ std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
             maxValue = matrix(i,matchingData.y);
         }
     }
-    result.push_back(maxValue / n);
-    result.push_back((matchingData.x/mta.rows()) / n);
+    result.push_back(maxValue );
+    result.push_back((matchingData.x/mta.rows()) );
 
     return result;
 }
