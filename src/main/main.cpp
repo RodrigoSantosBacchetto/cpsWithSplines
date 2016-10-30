@@ -1,10 +1,6 @@
 
 #include "main.hpp"
 
-
-
-
-
 typedef struct classResults {
     std::string class_name;
     std::vector<cv::Mat> images;
@@ -23,17 +19,34 @@ typedef struct classResults {
 
 } classResults;
 
-void originCps(std::vector<std::string> imageClassesDirectories);
+void experiment1_originalCps(std::vector<std::string> imageClassesDirectories);
+void experiment1_splineCps(std::vector<std::string> imageClassesDirectories);
 
 int main() {
 
-    double alfa = 1;
-    double beta = 1;
-    int sample = 20;
-
-    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
+    std::string parentDirectory = "D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
+    experiment1_originalCps(imageClassesDirectories);
+    experiment1_splineCps(imageClassesDirectories);
+
+    cvWaitKey( 0 );
+//    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
+//    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
+//    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
+//
+//    MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
+//    MatrixXd mtb = generateCpsWithSplineRefinement(sampledPoints);
+//
+//    /* the first value is the column index with the minimum sum*/
+//    /* the second value is the max distance between two matrix*/
+//    /* the third value is the promedian distance between two matrix*/
+//    std::vector<double> dist = smCpsRm( mta, mtb);
+    cvWaitKey();
+}
+
+
+void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
     std::vector<classResults> resultsByClass;
     //Explore class folders
     for(int i = 0; i < imageClassesDirectories.size(); i++){
@@ -46,7 +59,7 @@ int main() {
         currentResult.images = readImagesFromDirectory(imageClassesDirectories[i]);
 
         //Compute results for each image of the class
-        std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
+        std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name;
 
         for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
             /*If j=0 calc the first image cps data*/
@@ -66,6 +79,7 @@ int main() {
                 sampledPoints = sampleContourPoints(fullContour, 128);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
+                std::cout << std::endl << j;
             }
             /*Similar image*/
             std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
@@ -85,6 +99,8 @@ int main() {
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
 
+            std::cout << "S";
+
             /*Different image*/
             std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+1+(currentResult.images.size()-1)/2], ONLY_EXTERNAL_CONTOUR);
 
@@ -102,15 +118,16 @@ int main() {
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
             cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
             currentResult.diff_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrixDifferent)[1]);
+            std::cout << "D";
         }
 
         resultsByClass.push_back(currentResult);
 
-        std::cout << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
+        std::cout << std::endl << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
     }
 
     std::fstream outputFile;
-    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output1.csv", std::ios_base::out);
+    outputFile.open("D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\output_ours.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
 
@@ -137,26 +154,10 @@ int main() {
     }
 
     outputFile.close();
-
-    originCps(imageClassesDirectories);
-
-    cvWaitKey( 0 );
-//    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
-//    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
-//    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
-//
-//    MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
-//    MatrixXd mtb = generateCpsWithSplineRefinement(sampledPoints);
-//
-//    /* the first value is the column index with the minimum sum*/
-//    /* the second value is the max distance between two matrix*/
-//    /* the third value is the promedian distance between two matrix*/
-//    std::vector<double> dist = smCpsRm( mta, mtb);
-    cvWaitKey();
 }
 
 
-void originCps(std::vector<std::string> imageClassesDirectories) {
+void experiment1_originalCps(std::vector<std::string> imageClassesDirectories) {
     std::vector<classResults> resultsByClass;
     //Explore class folders
     for(int i = 0; i < imageClassesDirectories.size(); i++){
@@ -180,7 +181,6 @@ void originCps(std::vector<std::string> imageClassesDirectories) {
                 const double area = sqrt(contourArea(fullContour));
                 std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
                 MatrixXd cpsMatrix = computeCps(sampledPoints, area);
-                /*generateCpsWithSplineRefinement(sampledPoints, area);*/
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
                 sampledPoints = sampleContourPoints(fullContour, 64);
@@ -234,7 +234,7 @@ void originCps(std::vector<std::string> imageClassesDirectories) {
     }
 
     std::fstream outputFile;
-    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output2.csv", std::ios_base::out);
+    outputFile.open("D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\output_original.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
 
@@ -261,8 +261,6 @@ void originCps(std::vector<std::string> imageClassesDirectories) {
     }
 
     outputFile.close();
-
-    cvWaitKey( 0 );
 }
 
 
