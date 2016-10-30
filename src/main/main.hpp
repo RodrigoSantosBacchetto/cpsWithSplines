@@ -49,7 +49,7 @@ cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatri
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 
 double getMaxMinValue(std::vector<double> vector,std::string valueType);
-
+void printNewSample (std::vector<cv::Point> pointsToDraw);
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
 
@@ -157,7 +157,7 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const do
 
 
     std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
-
+    //printNewSample(pointsFromSpline);
     return computeCps(pointsFromSpline, area);
 }
 
@@ -435,30 +435,77 @@ std::vector<cv::Point> sampleContourPoints(std::vector<cv::Point> fullContour, i
 
 std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int sampleSize) {
 
-    std::vector<cv::Point> allSplinePoints;
+    double perimeter = 0;
+    for (int f = 0; f < resultsMatrixX.rows(); f++) {
+        //eq coefficients
+        double ax = resultsMatrixX(f,0);
+        double bx = resultsMatrixX(f,1);
+        double cx = resultsMatrixX(f,2);
+        double dx = resultsMatrixX(f,3);
 
-    /*Calculate all the points in the contour*/
-    int lastX = -1, lastY = -1;
-    int eqCount = resultsMatrixX.rows();
-    for(int row = 0; row < eqCount; row++){
-        for(double u=0; u <= 1; u+=0.001){
-            int XCoordinate = (int)(round((resultsMatrixX(row,0)*pow(u,3)) + (resultsMatrixX(row,1)*pow(u,2)) + (resultsMatrixX(row,2)*u) + resultsMatrixX(row,3)));
-            int YCoordinate = (int)(round((resultsMatrixY(row,0)*pow(u,3)) + (resultsMatrixY(row,1)*pow(u,2)) + (resultsMatrixY(row,2)*u) + resultsMatrixY(row,3)));
+        double ay = resultsMatrixY(f,0);
+        double by = resultsMatrixY(f,1);
+        double cy = resultsMatrixY(f,2);
+        double dy = resultsMatrixY(f,3);
 
-            if (XCoordinate != lastX && YCoordinate != lastY) {
-                lastX = XCoordinate;
-                lastY = YCoordinate;
-                allSplinePoints.push_back(cvPoint(XCoordinate, YCoordinate));
-            }
+        double lastX = dx;
+        double lastY = dy;
+
+        for(double t = 0.0001; t <= 1; t += 0.0001){
+            double thisX = (ax * pow(t,3)) + (bx * pow(t,2)) + (cx * t) + dx;
+            double thisY = (ay * pow(t,3)) + (by * pow(t,2)) + (cy * t) + dy;
+
+            perimeter += sqrt( pow((thisX - lastX),2) + pow((thisY - lastY),2));
+
+            lastX = thisX;
+            lastY = thisY;
         }
     }
 
+    double spacingNeeded = perimeter / (double)sampleSize;
     std::vector<cv::Point> sampledPoints;
-    double delta = (double)allSplinePoints.size() / (double)sampleSize;
-    for( double i = 0; i < allSplinePoints.size(); i += delta)
-        if(sampledPoints.size()<sampleSize) {
-            sampledPoints.push_back(allSplinePoints[round(i)]);
+
+    double currentSpacing = 0;
+    for (int f = 0; f < resultsMatrixX.rows(); f++) {
+        //eq coefficients
+        double ax = resultsMatrixX(f, 0);
+        double bx = resultsMatrixX(f, 1);
+        double cx = resultsMatrixX(f, 2);
+        double dx = resultsMatrixX(f, 3);
+
+        double ay = resultsMatrixY(f, 0);
+        double by = resultsMatrixY(f, 1);
+        double cy = resultsMatrixY(f, 2);
+        double dy = resultsMatrixY(f, 3);
+
+        double lastX = dx;
+        double lastY = dy;
+
+        if (sampledPoints.size() == 0) {
+            sampledPoints.push_back(cvPoint((int) round(dx), (int) round(dy)));
         }
+
+        for (double t = 0.0001; t <= 1; t += 0.0001) {
+            double thisX = (ax * pow(t, 3)) + (bx * pow(t, 2)) + (cx * t) + dx;
+            double thisY = (ay * pow(t, 3)) + (by * pow(t, 2)) + (cy * t) + dy;
+
+            currentSpacing += sqrt(pow((thisX - lastX), 2) + pow((thisY - lastY), 2));
+
+            if (currentSpacing >= spacingNeeded) {
+                currentSpacing = 0;
+                sampledPoints.push_back(cvPoint((int) round(thisX), (int) round(thisY)));
+
+                if (sampledPoints.size() == sampleSize) {
+                    //when the sample has the desired size, break the loops
+                    t = 1.1;
+                    f = resultsMatrixX.rows();
+                }
+            }
+            lastX = thisX;
+            lastY = thisY;
+        }
+    }
+
     return sampledPoints;
 }
 
@@ -615,6 +662,18 @@ std::string getClassNameFromPath(std::string fullPath){
     }
 
     return lastToken;
+}
+
+void printNewSample (std::vector<cv::Point> pointsToDraw) {
+    IplImage* imageToPrint = cvCreateImage(cvSize(500,500), 8, 3);
+
+    for(int i = 0; i < pointsToDraw.size(); i++) {
+        cvCircle(imageToPrint, pointsToDraw[i],1, CV_RGB(255,0,0), 1, 1, 1);
+    }
+
+    std::stringstream s;
+    s << "sample_" << std::rand();
+    cv::imshow(s.str(),cv::cvarrToMat(imageToPrint));
 }
 
 #endif //CPSWITHSPLINES_MAIN_H
