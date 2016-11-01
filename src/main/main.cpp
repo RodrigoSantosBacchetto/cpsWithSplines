@@ -24,7 +24,7 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories);
 
 int main() {
 
-    std::string parentDirectory = "D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\";
+    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
     experiment1_originalCps(imageClassesDirectories);
@@ -127,7 +127,7 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
     }
 
     std::fstream outputFile;
-    outputFile.open("D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\output_ours.csv", std::ios_base::out);
+    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output_ours.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
 
@@ -234,7 +234,7 @@ void experiment1_originalCps(std::vector<std::string> imageClassesDirectories) {
     }
 
     std::fstream outputFile;
-    outputFile.open("D:\\FP-UNA\\Image Databases\\ForExperiments\\rotatedAndScaledClasses\\output_original.csv", std::ios_base::out);
+    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output_original.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
 
