@@ -61,22 +61,22 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
         //Compute results for each image of the class
         std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name;
 
-        for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
+        for(int j = 0; j < (currentResult.images.size()-1); j++){
             /*If j=0 calc the first image cps data*/
             if(j==0) {
                 std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
                 MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 32);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 128);
+                sampledPoints = sampleContourPoints(fullContour, 64);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
                 std::cout << std::endl << j;
@@ -87,38 +87,17 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
             MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 32);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
-
-            std::cout << "S";
-
-            /*Different image*/
-            std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+1+(currentResult.images.size()-1)/2], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaDifferen = sqrt(contourArea(fullContourDifferent));
-
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
-            MatrixXd cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
-            currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDifferent)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
-            cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDifferent)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
-            cpsMatrixDifferent = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferen);
-            currentResult.diff_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrixDifferent)[1]);
-            std::cout << "D";
         }
 
         resultsByClass.push_back(currentResult);
@@ -129,27 +108,24 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
     std::fstream outputFile;
     outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output_ours.csv", std::ios_base::out);
 
-    outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
+    outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t64_HIT_MAX_DISTANCE\t128_HIT_MAX_DISTANCE" << std::endl;
 
     for(int i = 0; i < resultsByClass.size(); i++) {
 
         outputFile << resultsByClass[i].class_name << "\t";
 
         /* Get the max value and min value for a vector of double */
-        double valueDiff32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
         double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
-        outputFile << valueSame32 << "\t" << valueDiff32 << "\t";
+        outputFile << valueSame32 << "\t";
 
-        double valueDiff64 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
         double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
 
-        outputFile << valueSame64 << "\t" << valueDiff64 << "\t";
+        outputFile << valueSame64 << "\t";
 
-        double valueDiff128 = getMaxMinValue(resultsByClass[i].diff_class_distances_128 , "min");
         double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_128 , "max");
 
-        outputFile << valueSame128 << "\t" << valueDiff128 << std::endl;
+        outputFile << valueSame128 << std::endl;
 
     }
 
@@ -172,22 +148,22 @@ void experiment1_originalCps(std::vector<std::string> imageClassesDirectories) {
         //Compute results for each image of the class
         std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
 
-        for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
+        for(int j = 0; j < (currentResult.images.size()-1); j++){
             /*If j=0 calc the first image cps data*/
             if(j==0) {
                 std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
                 MatrixXd cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 32);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 128);
+                sampledPoints = sampleContourPoints(fullContour, 64);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
             }
@@ -197,35 +173,18 @@ void experiment1_originalCps(std::vector<std::string> imageClassesDirectories) {
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
             MatrixXd cpsMatrix = computeCps(sampledPoints, areaSimilar);
             currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 32);
             cpsMatrix = computeCps(sampledPoints, areaSimilar);
             currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = computeCps(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
 
-            /*Different image*/
-            std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j + 1 + (currentResult.images.size() - 1) / 2], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaDifferen = sqrt(contourArea(fullContourDifferent));
-
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
-            MatrixXd cpsMatrixDifferent = computeCps(sampledPointsDifferent, areaDifferen);
-            currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDifferent)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
-            cpsMatrixDifferent = computeCps(sampledPointsDifferent, areaDifferen);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDifferent)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
-            cpsMatrixDifferent = computeCps(sampledPointsDifferent, areaDifferen);
-            currentResult.diff_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrixDifferent)[1]);
         }
 
         resultsByClass.push_back(currentResult);
@@ -236,27 +195,24 @@ void experiment1_originalCps(std::vector<std::string> imageClassesDirectories) {
     std::fstream outputFile;
     outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output_original.csv", std::ios_base::out);
 
-    outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t32_MISS_MIN_DISTANCE\t64_HIT_MAX_DISTANCE\t64_MISS_MIN_DISTANCE\t128_HIT_MAX_DISTANCE\t128_MISS_MIN_DISTANCE" << std::endl;
+    outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t64_HIT_MAX_DISTANCE\t128_HIT_MAX_DISTANCE" << std::endl;
 
     for(int i = 0; i < resultsByClass.size(); i++) {
 
         outputFile << resultsByClass[i].class_name << "\t";
 
         /* Get the max value and min value for a vector of double */
-        double valueDiff32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
         double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
-        outputFile << valueSame32 << "\t" << valueDiff32 << "\t";
+        outputFile << valueSame32 << "\t";
 
-        double valueDiff64 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
         double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
 
-        outputFile << valueSame64 << "\t" << valueDiff64 << "\t";
+        outputFile << valueSame64 << "\t";
 
-        double valueDiff128 = getMaxMinValue(resultsByClass[i].diff_class_distances_128 , "min");
         double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_128 , "max");
 
-        outputFile << valueSame128 << "\t" << valueDiff128 << std::endl;
+        outputFile << valueSame128 << std::endl;
 
     }
 
