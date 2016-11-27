@@ -26,8 +26,10 @@ int main() {
 
     std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
+/*
 
     experiment1_originalCps(imageClassesDirectories);
+*/
     experiment1_splineCps(imageClassesDirectories);
 
     cvWaitKey( 0 );
@@ -63,16 +65,19 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
 
         for(int j = 0; j < (currentResult.images.size()-1); j++){
             /*If j=0 calc the first image cps data*/
-            if(j==0) {
+
                 std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
                 /* Calculate the area for the contour in order to normalize*/
+                std::vector<cv::Point> sampledPoints2 = sampleContourPoints(fullContour, 256);
+                printNewSample(sampledPoints2);
+            /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 256);
                 MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_32.push_back(cpsMatrix);
-
+/*
                 sampledPoints = sampleContourPoints(fullContour, 32);
+
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
@@ -80,11 +85,12 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
                 std::cout << std::endl << j;
-            }
-            /*Similar image*/
+*/
+
+ /*           *//*Similar image*//*
             std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
 
-            /* Calculate the area for the contour in order to normalize*/
+            *//* Calculate the area for the contour in order to normalize*//*
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
             std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
@@ -98,8 +104,8 @@ void experiment1_splineCps(std::vector<std::string> imageClassesDirectories) {
             sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
-        }
-
+ */       }
+        cvWaitKey( 0 );
         resultsByClass.push_back(currentResult);
 
         std::cout << std::endl << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;

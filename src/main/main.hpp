@@ -155,7 +155,12 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const do
     }
 
 
+    cv::Mat img =  generateSplineBasedFigure( resultsMatrixX,  resultsMatrixY, 1000, 1000);
+    std::stringstream s;
+    s << "sample_" << std::rand();
+    cv::imshow(s.str(),img);
 
+    cvWaitKey(0);
     std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
     //printNewSample(pointsFromSpline);
     return computeCps(pointsFromSpline, area);
@@ -512,21 +517,21 @@ std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd 
 cv::Mat generateSplineBasedFigure(MatrixXd resultsMatrixX, MatrixXd resultsMatrixY, int originalImgRows, int originalImgCols) {
     IplImage* img = cvCreateImage( cvSize( originalImgRows, originalImgCols ), 8, 1 );
 
-    CvPoint cvPoints[ resultsMatrixX.rows()*(1000) ];
+    std::vector<CvPoint> cvPoints;
     /*Calculate all the points in the contour*/
     int lastX = -1, lastY = -1, uIndex = 0;
     int eqCount = resultsMatrixX.rows();
     for(int row = 0; row < eqCount; row++){
-        for(double u=0; u <= 1; u+=0.001){
+        for(double u=0; u <= 1; u+=0.00001){
             int XCoordinate = (int)(round((resultsMatrixX(row,0)*pow(u,3)) + (resultsMatrixX(row,1)*pow(u,2)) + (resultsMatrixX(row,2)*u) + resultsMatrixX(row,3)));
             int YCoordinate = (int)(round((resultsMatrixY(row,0)*pow(u,3)) + (resultsMatrixY(row,1)*pow(u,2)) + (resultsMatrixY(row,2)*u) + resultsMatrixY(row,3)));
 
-            if (XCoordinate != lastX && YCoordinate != lastY) {
-                cvPoints[uIndex] = cvPoint(XCoordinate, YCoordinate);
+
+                cvPoints.push_back(cvPoint(XCoordinate, YCoordinate));
                 uIndex++;
                 lastX = XCoordinate;
                 lastY = YCoordinate;
-            }
+
         }
     }
 
@@ -668,12 +673,13 @@ void printNewSample (std::vector<cv::Point> pointsToDraw) {
     IplImage* imageToPrint = cvCreateImage(cvSize(500,500), 8, 3);
 
     for(int i = 0; i < pointsToDraw.size(); i++) {
-        cvCircle(imageToPrint, pointsToDraw[i],1, CV_RGB(255,0,0), 1, 1, 1);
+        cvCircle(imageToPrint, pointsToDraw[i],1, CV_RGB(255, 255, 255), 1, 1, 1);
     }
 
     std::stringstream s;
     s << "sample_" << std::rand();
     cv::imshow(s.str(),cv::cvarrToMat(imageToPrint));
+    cvWaitKey();
 }
 
 #endif //CPSWITHSPLINES_MAIN_H
