@@ -7,6 +7,7 @@
 #define CPSWITHSPLINES_CPSFUNCTIONS_H
 
 #include "main.hpp"
+#include "contourUtilities.hpp"
 
 /*Functions prototype declaration*/
 MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> X, const double area);

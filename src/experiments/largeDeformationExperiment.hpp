@@ -6,11 +6,11 @@
 #ifndef CPSWITHSPLINES_LARGEDEFORMATIONEXPERIMENT_H
 #define CPSWITHSPLINES_LARGEDEFORMATIONEXPERIMENT_H
 
-#include "main.hpp"
-#include "filesManagementFunctions.hpp"
-#include "contourUtilities.hpp"
-#include "drawUtilityClasses.hpp"
-#include "cpsFunctions.hpp"
+#include "../main/main.hpp"
+#include "../main/filesManagementFunctions.hpp"
+#include "../main/drawUtilityClasses.hpp"
+#include "../main/cpsFunctions.hpp"
+#include "../main/contourUtilities.hpp"
 
 void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageClassesDirectories);
 void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClassesDirectories);

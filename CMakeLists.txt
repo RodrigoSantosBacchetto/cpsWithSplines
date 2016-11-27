@@ -31,7 +31,7 @@ SET(SOURCE_FILES
         # Main
         src/main/main.hpp
         src/main/cpsFunctions.hpp
-        src/main/largeDeformationExperiment.hpp
+        src/experiments/largeDeformationExperiment.hpp
         src/main/drawUtilityClasses.hpp
         src/main/filesManagementFunctions.hpp
         src/main/generalFunctions.hpp
