@@ -30,6 +30,12 @@ SET(SOURCE_FILES
         # Utility functions
         # Main
         src/main/main.hpp
+        src/main/cpsFunctions.hpp
+        src/main/largeDeformationExperiment.hpp
+        src/main/drawUtilityClasses.hpp
+        src/main/filesManagementFunctions.hpp
+        src/main/generalFunctions.hpp
+        src/main/contourUtilities.hpp
         src/main/main.cpp)
 
 add_executable(cpsWithSplines ${SOURCE_FILES})
