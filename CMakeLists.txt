@@ -45,6 +45,6 @@ FIND_PACKAGE( OpenCV REQUIRED)
 set(OpenCV_FOUND 1)
 target_link_libraries(cpsWithSplines ${OpenCV_LIBS} )
 
-include_directories("C:\\eigen-eigen-07105f7124f9")
-include_directories("C:\\Users\\Santos\\ClionProjects\\cpsWithSplines\\src\\cps")
+include_directories("D:\\FP-UNA\\eigen-eigen-07105f7124f9\\eigen-eigen-07105f7124f9")
+include_directories("D:\\FP-UNA\\opencvandtools\\cpsWithSplines\\src\\cps")
 
