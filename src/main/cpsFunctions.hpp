@@ -246,5 +246,36 @@ cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB){
     return matchingData;
 }
 
+double r_measure (std::vector<double> X,std::vector<double> Y) {
+    int b = X.size();
+    int N = b - 1;
+
+    std::vector<double> c1, c2, dxsy, dysx;
+    c1.push_back(1);
+    c2.push_back(1);
+    for(int i = 0; i < N; i++){
+        c1.push_back(X[i] / Y[i]);
+        c2.push_back(Y[i] / X[i]);
+    }
+    c1.push_back(1);
+    c2.push_back(1);
+
+    for(int i = 0; i < N+1; i++){
+        dxsy.push_back(c1[i+1] > c1[i] ? c1[i+1] - c1[i] : c1[i] - c1[i+1]);
+        dysx.push_back(c2[i+1] > c2[i] ? c2[i+1] - c2[i] : c2[i] - c2[i+1]);
+    }
+
+    double sum1 = 0, sum2 = 0;
+    for(int i = 1; i < N; i++){
+        sum1 += dxsy[i];
+        sum2 += dysx[i];
+    }
+
+    sum1 += 0.5 * (dxsy[0] + dxsy[N]);
+    sum2 += 0.5 * (dysx[0] + dysx[N]);
+
+    return sum1 * sum2;
+}
+
 
 #endif //CPSWITHSPLINES_CPSFUNCTIONS_H
