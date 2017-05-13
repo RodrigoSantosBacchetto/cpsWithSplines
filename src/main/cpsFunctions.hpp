@@ -116,12 +116,12 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const do
     }
 
 
-    cv::Mat img =  generateSplineBasedFigure( resultsMatrixX,  resultsMatrixY, 1000, 1000);
+/*    cv::Mat img =  generateSplineBasedFigure( resultsMatrixX,  resultsMatrixY, 1000, 1000);
     std::stringstream s;
     s << "sample_" << std::rand();
     cv::imshow(s.str(),img);
 
-    cvWaitKey(0);
+    cvWaitKey(0);*/
     std::vector<cv::Point> pointsFromSpline = samplePointsFromSpline(resultsMatrixX, resultsMatrixY, points);
     //printNewSample(pointsFromSpline);
     return computeCps(pointsFromSpline, area);

@@ -34,32 +34,28 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
         for(int j = 0; j < (currentResult.images.size()-1); j++){
             /*If j=0 calc the first image cps data*/
+            if(j==0) {
+                std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
-            std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
+                /* Calculate the area for the contour in order to normalize*/
+                const double area = sqrt(contourArea(fullContour));
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
+                MatrixXd cpsMatrix = computeCps(sampledPoints, area);
+                currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-            /* Calculate the area for the contour in order to normalize*/
-            std::vector<cv::Point> sampledPoints2 = sampleContourPoints(fullContour, 256);
-            printNewSample(sampledPoints2);
-            /* Calculate the area for the contour in order to normalize*/
-            const double area = sqrt(contourArea(fullContour));
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 256);
-            MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-/*
                 sampledPoints = sampleContourPoints(fullContour, 32);
-
-                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
                 sampledPoints = sampleContourPoints(fullContour, 64);
-                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
-                std::cout << std::endl << j;
-*/
+            }
 
-            /*           *//*Similar image*//*
+            /*Similar image*/
             std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
 
-            *//* Calculate the area for the contour in order to normalize*//*
+            /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
             std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
@@ -73,7 +69,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
- */       }
+        }
         cvWaitKey( 0 );
         resultsByClass.push_back(currentResult);
 
@@ -81,7 +77,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
     }
 
     std::fstream outputFile;
-    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output_ours.csv", std::ios_base::out);
+    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\cps_plus_splines.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t64_HIT_MAX_DISTANCE\t128_HIT_MAX_DISTANCE" << std::endl;
 
@@ -144,7 +140,6 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
             }
             /*Similar image*/
             std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j + 1], ONLY_EXTERNAL_CONTOUR);
-
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
@@ -168,7 +163,7 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
     }
 
     std::fstream outputFile;
-    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\output_original.csv", std::ios_base::out);
+    outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\normal_cps.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t64_HIT_MAX_DISTANCE\t128_HIT_MAX_DISTANCE" << std::endl;
 
