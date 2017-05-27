@@ -38,6 +38,10 @@ typedef struct classResults {
     std::string class_name;
     std::vector<cv::Mat> images;
 
+    std::vector<MatrixXd> cp_signatures_16; // n
+    std::vector<double> same_class_distances_16; // (n-1) / 2
+    std::vector<double> diff_class_distances_16; // (n-1) / 2
+
     std::vector<MatrixXd> cp_signatures_32; // n
     std::vector<double> same_class_distances_32; // (n-1) / 2
     std::vector<double> diff_class_distances_32; // (n-1) / 2
@@ -46,9 +50,18 @@ typedef struct classResults {
     std::vector<double> same_class_distances_64;
     std::vector<double> diff_class_distances_64;
 
+    std::vector<MatrixXd> cp_signatures_86;
+    std::vector<double> same_class_distances_86;
+    std::vector<double> diff_class_distances_86;
+
+
     std::vector<MatrixXd> cp_signatures_128;
     std::vector<double> same_class_distances_128;
     std::vector<double> diff_class_distances_128;
+
+    std::vector<MatrixXd> cp_signatures_256;
+    std::vector<double> same_class_distances_256;
+    std::vector<double> diff_class_distances_256;
 
 } classResults;
 

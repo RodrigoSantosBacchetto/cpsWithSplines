@@ -39,15 +39,15 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 86);
                 MatrixXd cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 32);
+                sampledPoints = sampleContourPoints(fullContour, 128);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 256);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
             }
@@ -58,15 +58,15 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 86);
             MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 256);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
         }
@@ -126,15 +126,15 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 86);
                 MatrixXd cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 32);
+                sampledPoints = sampleContourPoints(fullContour, 128);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 256);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_128.push_back(cpsMatrix);
             }
@@ -143,15 +143,15 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 86);
             MatrixXd cpsMatrix = computeCps(sampledPoints, areaSimilar);
             currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
             cpsMatrix = computeCps(sampledPoints, areaSimilar);
             currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 256);
             cpsMatrix = computeCps(sampledPoints, areaSimilar);
             currentResult.same_class_distances_128.push_back(smCpsRm(currentResult.cp_signatures_128[0],cpsMatrix)[1]);
 
