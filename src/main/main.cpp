@@ -8,7 +8,7 @@ int main() {
     std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
-    largeDeformationExperimentWithOriginalCps(imageClassesDirectories);
+    /*largeDeformationExperimentWithOriginalCps(imageClassesDirectories);*/
     largeDeformationExperimentWithSplineCps(imageClassesDirectories);
 
     cvWaitKey( 0 );
