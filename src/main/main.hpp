@@ -41,27 +41,32 @@ typedef struct classResults {
     std::vector<MatrixXd> cp_signatures_16; // n
     std::vector<double> same_class_distances_16; // (n-1) / 2
     std::vector<double> diff_class_distances_16; // (n-1) / 2
+    std::double_t execution_time_16= 0;
 
     std::vector<MatrixXd> cp_signatures_32; // n
     std::vector<double> same_class_distances_32; // (n-1) / 2
     std::vector<double> diff_class_distances_32; // (n-1) / 2
+    std::double_t execution_time_32= 0;
 
     std::vector<MatrixXd> cp_signatures_64;
     std::vector<double> same_class_distances_64;
     std::vector<double> diff_class_distances_64;
+    std::double_t execution_time_64= 0;
 
     std::vector<MatrixXd> cp_signatures_86;
     std::vector<double> same_class_distances_86;
     std::vector<double> diff_class_distances_86;
-
+    std::double_t execution_time_86= 0;
 
     std::vector<MatrixXd> cp_signatures_128;
     std::vector<double> same_class_distances_128;
     std::vector<double> diff_class_distances_128;
+    std::double_t execution_time_128= 0;
 
     std::vector<MatrixXd> cp_signatures_256;
     std::vector<double> same_class_distances_256;
     std::vector<double> diff_class_distances_256;
+    std::double_t execution_time_256 = 0;
 
 } classResults;
 

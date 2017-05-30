@@ -177,7 +177,6 @@ std::vector<cv::Point> samplePointsFromSpline(MatrixXd resultsMatrixX, MatrixXd 
             if (currentSpacing >= spacingNeeded) {
                 currentSpacing = 0;
 
-                std::cout << std::endl << " X  =  " << round(thisX) << "  Y  =  " << round(thisY);
                 sampledPoints.push_back(cvPoint((int) round(thisX), (int) round(thisY)));
 
                 if (sampledPoints.size() == sampleSize) {
