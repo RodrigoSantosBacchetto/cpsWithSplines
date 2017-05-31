@@ -11,7 +11,9 @@
 #include "../main/drawUtilityClasses.hpp"
 #include "../main/cpsFunctions.hpp"
 #include "../main/contourUtilities.hpp"
-
+#include <iostream>
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
 void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageClassesDirectories);
 void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClassesDirectories);
 
@@ -19,6 +21,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
 void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClassesDirectories) {
     std::vector<classResults> resultsByClass;
+    auto t1 = Clock::now(), t2 = Clock::now();
     //Explore class folders
     for(int i = 0; i < imageClassesDirectories.size(); i++){
         classResults currentResult;
@@ -32,67 +35,49 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
         //Compute results for each image of the class
         std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name;
 
-        for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
+        for(int j = 0; j < currentResult.images.size(); j++){
             /*If j=0 calc the first image cps data*/
             if(j==0) {
                 std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 86);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
+                t1 = Clock::now();
                 MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_16.push_back(cpsMatrix);
-
+                t2 = Clock::now();
+                currentResult.execution_time_16 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                sampledPoints = sampleContourPoints(fullContour, 32);
+                t1 = Clock::now();
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                t2 = Clock::now();
+                currentResult.execution_time_32 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                sampledPoints = sampleContourPoints(fullContour, 64);
+                t1 = Clock::now();
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                t2 = Clock::now();
+                currentResult.execution_time_64 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                sampledPoints = sampleContourPoints(fullContour, 86);
+                t1 = Clock::now();
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                t2 = Clock::now();
+                currentResult.execution_time_86 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
                 sampledPoints = sampleContourPoints(fullContour, 128);
+                t1 = Clock::now();
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_32.push_back(cpsMatrix);
-
+                t2 = Clock::now();
+                currentResult.execution_time_128 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
                 sampledPoints = sampleContourPoints(fullContour, 256);
+                t1 = Clock::now();
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_64.push_back(cpsMatrix);
+                t2 = Clock::now();
+                currentResult.execution_time_256 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+
+
             }
-
-            /*Similar image*/
-            std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaSimilar = sqrt(contourArea(fullContourSimilar));
-
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 86);
-            MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrix)[1]);
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 256);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
-
-            /*different image*/
-            std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+6], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaDifferent = sqrt(contourArea(fullContourDifferent));
-
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 86);
-            MatrixXd cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrixDiff)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
-            cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDiff)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 256);
-            cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDiff)[1]);
-
         }
         cvWaitKey( 0 );
         resultsByClass.push_back(currentResult);
-
-        std::cout << std::endl << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
     }
 
     std::fstream outputFile;
@@ -105,32 +90,26 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
         outputFile << resultsByClass[i].class_name << "\t";
 
         /* Get the max value and min value for a vector of double */
-        double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
 
-        outputFile << valueSame32 << "\t";
+        outputFile << resultsByClass[i].execution_time_16 << "\t";
 
-        double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
-        outputFile << valueSame64 << "\t";
+        outputFile << resultsByClass[i].execution_time_32 << "\t";
 
-        double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
 
-        outputFile << valueSame128 << "\t";
+        outputFile << resultsByClass[i].execution_time_64 << "\t";
 
         outputFile << resultsByClass[i].class_name << "\t";
 
         /* Get the max value and min value for a vector of double */
-        valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
 
-        outputFile << valueSame32 << "\t";
+        outputFile << resultsByClass[i].execution_time_86 << "\t";
 
-        valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
 
-        outputFile << valueSame64 << "\t";
+        outputFile << resultsByClass[i].execution_time_128 << "\t";
 
-        valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
 
-        outputFile << valueSame128 << std::endl;
+        outputFile << resultsByClass[i].execution_time_256 << std::endl;
 
     }
 
@@ -140,6 +119,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
 void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageClassesDirectories) {
     std::vector<classResults> resultsByClass;
+    auto t1 = Clock::now(), t2 = Clock::now();
     //Explore class folders
     for(int i = 0; i < imageClassesDirectories.size(); i++){
         classResults currentResult;
@@ -153,61 +133,45 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
         //Compute results for each image of the class
         std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
 
-        for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
+        for(int j = 0; j < currentResult.images.size(); j++){
             /*If j=0 calc the first image cps data*/
             if(j==0) {
                 std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 86);
+
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
+                t1 = Clock::now();
                 MatrixXd cpsMatrix = computeCps(sampledPoints, area);
-                currentResult.cp_signatures_16.push_back(cpsMatrix);
-
+                t2 = Clock::now();
+                currentResult.execution_time_16 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                sampledPoints = sampleContourPoints(fullContour, 32);
+                t1 = Clock::now();
+                cpsMatrix = computeCps(sampledPoints, area);
+                t2 = Clock::now();
+                currentResult.execution_time_32 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                sampledPoints = sampleContourPoints(fullContour, 64);
+                t1 = Clock::now();
+                cpsMatrix = computeCps(sampledPoints, area);
+                t2 = Clock::now();
+                currentResult.execution_time_64 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+                sampledPoints = sampleContourPoints(fullContour, 86);
+                t1 = Clock::now();
+                cpsMatrix = computeCps(sampledPoints, area);
+                t2 = Clock::now();
+                currentResult.execution_time_86 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
                 sampledPoints = sampleContourPoints(fullContour, 128);
+                t1 = Clock::now();
                 cpsMatrix = computeCps(sampledPoints, area);
-                currentResult.cp_signatures_32.push_back(cpsMatrix);
-
+                t2 = Clock::now();
+                currentResult.execution_time_128 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
                 sampledPoints = sampleContourPoints(fullContour, 256);
+                t1 = Clock::now();
                 cpsMatrix = computeCps(sampledPoints, area);
-                currentResult.cp_signatures_64.push_back(cpsMatrix);
+                t2 = Clock::now();
+                currentResult.execution_time_256 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
             }
-
-            /*Similar image*/
-            std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaSimilar = sqrt(contourArea(fullContourSimilar));
-
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 86);
-            MatrixXd cpsMatrix = computeCps(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrix)[1]);
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
-            cpsMatrix = computeCps(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 256);
-            cpsMatrix = computeCps(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
-
-            /*different image*/
-            std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+6], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaDifferent = sqrt(contourArea(fullContourDifferent));
-
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 86);
-            MatrixXd cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrixDiff)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
-            cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDiff)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 256);
-            cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDiff)[1]);
 
         }
         resultsByClass.push_back(currentResult);
@@ -224,33 +188,25 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
 
         outputFile << resultsByClass[i].class_name << "\t";
 
-        /* Get the max value and min value for a vector of double */
-        double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
+        outputFile << resultsByClass[i].execution_time_16 << "\t";
 
-        outputFile << valueSame32 << "\t";
 
-        double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+        outputFile << resultsByClass[i].execution_time_32 << "\t";
 
-        outputFile << valueSame64 << "\t";
 
-        double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
-
-        outputFile << valueSame128 << "\t";
+        outputFile << resultsByClass[i].execution_time_64 << "\t";
 
         outputFile << resultsByClass[i].class_name << "\t";
 
         /* Get the max value and min value for a vector of double */
-        double valuediff16 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
 
-        outputFile << valuediff16 << "\t";
+        outputFile << resultsByClass[i].execution_time_86 << "\t";
 
-        double valuediff32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
 
-        outputFile << valuediff32 << "\t";
+        outputFile << resultsByClass[i].execution_time_128 << "\t";
 
-        double valuediff64 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
 
-        outputFile << valuediff64 << std::endl;
+        outputFile << resultsByClass[i].execution_time_256 << std::endl;
 
     }
 
