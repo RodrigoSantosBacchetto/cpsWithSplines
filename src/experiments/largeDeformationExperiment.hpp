@@ -47,7 +47,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 65);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
             }
@@ -99,7 +99,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
     outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\cps_plus_splines.csv", std::ios_base::out);
 
     outputFile << "CLASS\t16_HIT_MAX_DISTANCE_SAME\t32_HIT_MAX_DISTANCE_SAME\t64_HIT_MAX_DISTANCE_SAME\t16_HIT_MAX_DISTANCE_DIFF\t32_HIT_MAX_DISTANCE_DIFF\t64_HIT_MAX_DISTANCE_DIFF" << std::endl;
-
+    double maxValue = 0;
     for(int i = 0; i < resultsByClass.size(); i++) {
 
         outputFile << resultsByClass[i].class_name << "\t";
@@ -109,13 +109,26 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
         outputFile << valueSame32 << "\t";
 
+        if(valueSame32>maxValue){
+            maxValue = valueSame32;
+        }
+
         double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
         outputFile << valueSame64 << "\t";
 
+        if(valueSame64>maxValue){
+            maxValue = valueSame64;
+        }
+
         double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
 
         outputFile << valueSame128 << "\t";
+
+        if(valueSame128>maxValue){
+            maxValue = valueSame128;
+        }
+
 
         outputFile << resultsByClass[i].class_name << "\t";
 
@@ -124,15 +137,74 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
         outputFile << valueSame32 << "\t";
 
+        if(valueSame32>maxValue){
+            maxValue = valueSame32;
+        }
+
+
         valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
 
         outputFile << valueSame64 << "\t";
+
+        if(valueSame64>maxValue){
+            maxValue = valueSame64;
+        }
+
 
         valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
 
         outputFile << valueSame128 << std::endl;
 
+        if(valueSame128>maxValue){
+            maxValue = valueSame128;
+        }
+
     }
+    double error = 100, umbralOptimo;
+    for(double umbral = 0; umbral < maxValue/2; umbral = umbral + 0.01) {
+        double FP=0, FN=0;
+        for(int i = 0; i < resultsByClass.size(); i++) {
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
+            if(valueSame32>umbral){
+                FP++;
+            }
+            double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+            if(valueSame64>umbral){
+                FP++;
+            }
+            double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
+            if(valueSame128>umbral){
+                FP++;
+            }
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
+            if(valueSame32<umbral){
+                FN++;
+            }
+            valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
+            if(valueSame64<umbral){
+                FN++;
+            }
+            valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
+            if(valueSame128<umbral){
+                FN++;
+            }
+        }
+        if(error> ((FP+FN)/(2*30))){
+            error = ((FP+FN)/(2*30));
+            umbralOptimo = umbral;
+        }
+    }
+    outputFile << "ERROR = "  << "\t";
+
+    outputFile << error << "\t";
+    outputFile << "UMBRAL OPTIMO = "  << "\t";
+
+    outputFile << umbralOptimo << "\t";
+
 
     outputFile.close();
 }
@@ -219,7 +291,7 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
     outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\normal_cps.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t64_HIT_MAX_DISTANCE\t128_HIT_MAX_DISTANCE" << std::endl;
-
+    double maxValue = 0;
     for(int i = 0; i < resultsByClass.size(); i++) {
 
         outputFile << resultsByClass[i].class_name << "\t";
@@ -228,6 +300,9 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
         double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
 
         outputFile << valueSame32 << "\t";
+        if(valueSame32>maxValue){
+            maxValue = valueSame32;
+        }
 
         double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
@@ -243,7 +318,9 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
         double valuediff16 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
 
         outputFile << valuediff16 << "\t";
-
+        if(valuediff16>maxValue){
+            maxValue = valuediff16;
+        }
         double valuediff32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
 
         outputFile << valuediff32 << "\t";
@@ -253,6 +330,34 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
         outputFile << valuediff64 << std::endl;
 
     }
+    double error = 100, umbralOptimo;
+    for(double umbral = 0; umbral < maxValue/2; umbral = umbral + 1) {
+        double FP=0, FN=0;
+        for(int i = 0; i < resultsByClass.size(); i++) {
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
+            if(valueSame32>umbral){
+                FP++;
+            }
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
+            if(valueSame32<umbral){
+                FN++;
+            }
+        }
+        if(error > ((FP+FN)/(2*30))){
+            error = ((FP+FN)/(2*30));
+            umbralOptimo = umbral;
+        }
+    }
+    outputFile << "ERROR = "  << "\t";
+
+    outputFile << error << "\t";
+    outputFile << "UMBRAL OPTIMO = "  << "\t";
+
+    outputFile << umbralOptimo << "\t";
 
     outputFile.close();
 }

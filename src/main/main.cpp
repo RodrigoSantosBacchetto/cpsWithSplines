@@ -9,7 +9,7 @@ int main() {
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
     largeDeformationExperimentWithOriginalCps(imageClassesDirectories);
-    largeDeformationExperimentWithSplineCps(imageClassesDirectories);
+   /* largeDeformationExperimentWithSplineCps(imageClassesDirectories);*/
 
     cvWaitKey( 0 );
 //    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
