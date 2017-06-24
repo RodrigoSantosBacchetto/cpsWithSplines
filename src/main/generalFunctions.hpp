@@ -6,6 +6,8 @@
 #define CPSWITHSPLINES_GENERALFUNCTIONS_H
 
 #include "main.hpp"
+#include<Eigen/Core>
+#include<Eigen/SVD>
 
 cv::Point2d minSum(cv::Mat mat);
 int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
@@ -74,5 +76,13 @@ double getMaxMinValue(std::vector<double> vector, std::string valueType) {
     return tempVal;
 }
 
+
+template<typename _Matrix_Type_>
+_Matrix_Type_ pseudoInverse(const _Matrix_Type_ &a, double epsilon = std::numeric_limits<double>::epsilon())
+{
+    Eigen::JacobiSVD< _Matrix_Type_ > svd(a ,Eigen::ComputeThinU | Eigen::ComputeThinV);
+    double tolerance = epsilon * std::max(a.cols(), a.rows()) *svd.singularValues().array().abs()(0);
+    return svd.matrixV() *  (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
+}
 
 #endif //CPSWITHSPLINES_GENERALFUNCTIONS_H
