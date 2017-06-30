@@ -8,8 +8,11 @@ int main() {
     std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
+/*
+    largeDeformationExperimentWithSplineCps(imageClassesDirectories);*/
     largeDeformationExperimentWithOriginalCps(imageClassesDirectories);
-   /* largeDeformationExperimentWithSplineCps(imageClassesDirectories);*/
+
+
 
     cvWaitKey( 0 );
 //    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten

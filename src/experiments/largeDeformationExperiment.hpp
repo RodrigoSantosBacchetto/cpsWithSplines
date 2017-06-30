@@ -35,19 +35,19 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
         for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
             /*If j=0 calc the first image cps data*/
             if(j==0) {
-                std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
+                    std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
-                MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+                cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_16.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 32);
+                sampledPoints = sampleContourPoints(fullContour, 64);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 65);
+                sampledPoints = sampleContourPoints(fullContour, 128);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
             }
@@ -58,17 +58,17 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
-            MatrixXd cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrix)[1]);
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 32);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
+            currentResult.same_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrix,0.5,0.5));
 
             sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
+            currentResult.same_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrix,0.5,0.5));
+
+            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
+            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
+            currentResult.same_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrix,0.5,0.5));
 
             /*different image*/
             std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+6], ONLY_EXTERNAL_CONTOUR);
@@ -76,17 +76,17 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             /* Calculate the area for the contour in order to normalize*/
             const double areaDifferent = sqrt(contourArea(fullContourDifferent));
 
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 16);
-            MatrixXd cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrixDiff)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
-            cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDiff)[1]);
+            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
+            cspResult cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
+            currentResult.diff_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrixDiff,0.5,0.5));
 
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
             cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDiff)[1]);
+            currentResult.diff_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrixDiff,0.5,0.5));
+
+            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
+            cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
+            currentResult.diff_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrixDiff,0.5,0.5));
 
         }
         cvWaitKey( 0 );
@@ -109,26 +109,13 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
         outputFile << valueSame32 << "\t";
 
-        if(valueSame32>maxValue){
-            maxValue = valueSame32;
-        }
-
         double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
         outputFile << valueSame64 << "\t";
 
-        if(valueSame64>maxValue){
-            maxValue = valueSame64;
-        }
-
         double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
 
         outputFile << valueSame128 << "\t";
-
-        if(valueSame128>maxValue){
-            maxValue = valueSame128;
-        }
-
 
         outputFile << resultsByClass[i].class_name << "\t";
 
@@ -137,31 +124,20 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
         outputFile << valueSame32 << "\t";
 
-        if(valueSame32>maxValue){
-            maxValue = valueSame32;
-        }
-
 
         valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
 
         outputFile << valueSame64 << "\t";
 
-        if(valueSame64>maxValue){
-            maxValue = valueSame64;
-        }
-
-
         valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
 
         outputFile << valueSame128 << std::endl;
 
-        if(valueSame128>maxValue){
-            maxValue = valueSame128;
-        }
+
 
     }
     double error = 100, umbralOptimo;
-    for(double umbral = 0; umbral < maxValue/2; umbral = umbral + 0.01) {
+    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
         double FP=0, FN=0;
         for(int i = 0; i < resultsByClass.size(); i++) {
 
@@ -170,26 +146,10 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             if(valueSame32>umbral){
                 FP++;
             }
-            double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
-            if(valueSame64>umbral){
-                FP++;
-            }
-            double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
-            if(valueSame128>umbral){
-                FP++;
-            }
 
-            /* Get the max value and min value for a vector of double */
+
             valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
             if(valueSame32<umbral){
-                FN++;
-            }
-            valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
-            if(valueSame64<umbral){
-                FN++;
-            }
-            valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
-            if(valueSame128<umbral){
                 FN++;
             }
         }
@@ -198,7 +158,65 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             umbralOptimo = umbral;
         }
     }
-    outputFile << "ERROR = "  << "\t";
+    outputFile << "ERROR 16  = "  << "\t";
+
+    outputFile << error << "\t";
+    outputFile << "UMBRAL OPTIMO = "  << "\t";
+
+    outputFile << umbralOptimo << "\t";
+
+    error = 100;
+    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
+        double FP=0, FN=0;
+        for(int i = 0; i < resultsByClass.size(); i++) {
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+            if(valueSame32>umbral){
+                FP++;
+            }
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
+            if(valueSame32<umbral){
+                FN++;
+            }
+        }
+        if(error> ((FP+FN)/(2*30))){
+            error = ((FP+FN)/(2*30));
+            umbralOptimo = umbral;
+        }
+    }
+    outputFile << "ERROR 32  = "  << "\t";
+
+    outputFile << error << "\t";
+    outputFile << "UMBRAL OPTIMO = "  << "\t";
+
+    outputFile << umbralOptimo << "\t";
+
+    error = 100;
+    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
+        double FP=0, FN=0;
+        for(int i = 0; i < resultsByClass.size(); i++) {
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
+            if(valueSame32>umbral){
+                FP++;
+            }
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
+            if(valueSame32<umbral){
+                FN++;
+            }
+        }
+        if(error> ((FP+FN)/(2*30))){
+            error = ((FP+FN)/(2*30));
+            umbralOptimo = umbral;
+        }
+    }
+    outputFile << "ERROR 64  = "  << "\t";
 
     outputFile << error << "\t";
     outputFile << "UMBRAL OPTIMO = "  << "\t";
@@ -232,15 +250,15 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 16);
-                MatrixXd cpsMatrix = computeCps(sampledPoints, area);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+                cspResult cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_16.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 32);
+                sampledPoints = sampleContourPoints(fullContour, 64);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 128);
                 cpsMatrix = computeCps(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
             }
@@ -251,17 +269,17 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 16);
-            MatrixXd cpsMatrix = computeCps(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrix)[1]);
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 32);
-            cpsMatrix = computeCps(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrix)[1]);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            cspResult cpsMatrix = computeCps(sampledPoints, areaSimilar);
+            currentResult.same_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrix,0.5,0.5));
 
             sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cpsMatrix = computeCps(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrix)[1]);
+            currentResult.same_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrix,0.5,0.5));
+
+            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
+            cpsMatrix = computeCps(sampledPoints, areaSimilar);
+            currentResult.same_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrix,0.5,0.5));
 
             /*different image*/
             std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+6], ONLY_EXTERNAL_CONTOUR);
@@ -269,17 +287,17 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
             /* Calculate the area for the contour in order to normalize*/
             const double areaDifferent = sqrt(contourArea(fullContourDifferent));
 
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 16);
-            MatrixXd cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_16.push_back(smCpsRm(currentResult.cp_signatures_16[0],cpsMatrixDiff)[1]);
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
-            cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_32.push_back(smCpsRm(currentResult.cp_signatures_32[0],cpsMatrixDiff)[1]);
+            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
+            cspResult cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
+            currentResult.diff_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrixDiff,0.5,0.5));
 
             sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
             cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_64.push_back(smCpsRm(currentResult.cp_signatures_64[0],cpsMatrixDiff)[1]);
+            currentResult.diff_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrixDiff,0.5,0.5));
+
+            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
+            cpsMatrixDiff = computeCps(sampledPointsDifferent, areaDifferent);
+            currentResult.diff_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrixDiff,0.5,0.5));
 
         }
         resultsByClass.push_back(currentResult);
@@ -291,7 +309,7 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
     outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\normal_cps.csv", std::ios_base::out);
 
     outputFile << "CLASS\t32_HIT_MAX_DISTANCE\t64_HIT_MAX_DISTANCE\t128_HIT_MAX_DISTANCE" << std::endl;
-    double maxValue = 0;
+
     for(int i = 0; i < resultsByClass.size(); i++) {
 
         outputFile << resultsByClass[i].class_name << "\t";
@@ -300,9 +318,6 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
         double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
 
         outputFile << valueSame32 << "\t";
-        if(valueSame32>maxValue){
-            maxValue = valueSame32;
-        }
 
         double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
 
@@ -318,9 +333,7 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
         double valuediff16 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
 
         outputFile << valuediff16 << "\t";
-        if(valuediff16>maxValue){
-            maxValue = valuediff16;
-        }
+
         double valuediff32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
 
         outputFile << valuediff32 << "\t";
@@ -331,7 +344,7 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
 
     }
     double error = 100, umbralOptimo;
-    for(double umbral = 0; umbral < maxValue/2; umbral = umbral + 1) {
+    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
         double FP=0, FN=0;
         for(int i = 0; i < resultsByClass.size(); i++) {
 
@@ -347,12 +360,70 @@ void largeDeformationExperimentWithOriginalCps(std::vector<std::string> imageCla
                 FN++;
             }
         }
-        if(error > ((FP+FN)/(2*30))){
+        if(error> ((FP+FN)/(2*30))){
             error = ((FP+FN)/(2*30));
             umbralOptimo = umbral;
         }
     }
-    outputFile << "ERROR = "  << "\t";
+    outputFile << "ERROR 16  = "  << "\t";
+
+    outputFile << error << "\t";
+    outputFile << "UMBRAL OPTIMO = "  << "\t";
+
+    outputFile << umbralOptimo << "\t";
+
+    error = 100;
+    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
+        double FP=0, FN=0;
+        for(int i = 0; i < resultsByClass.size(); i++) {
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+            if(valueSame32>umbral){
+                FP++;
+            }
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
+            if(valueSame32<umbral){
+                FN++;
+            }
+        }
+        if(error> ((FP+FN)/(2*30))){
+            error = ((FP+FN)/(2*30));
+            umbralOptimo = umbral;
+        }
+    }
+    outputFile << "ERROR 32  = "  << "\t";
+
+    outputFile << error << "\t";
+    outputFile << "UMBRAL OPTIMO = "  << "\t";
+
+    outputFile << umbralOptimo << "\t";
+
+    error = 100;
+    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
+        double FP=0, FN=0;
+        for(int i = 0; i < resultsByClass.size(); i++) {
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
+            if(valueSame32>umbral){
+                FP++;
+            }
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
+            if(valueSame32<umbral){
+                FN++;
+            }
+        }
+        if(error> ((FP+FN)/(2*30))){
+            error = ((FP+FN)/(2*30));
+            umbralOptimo = umbral;
+        }
+    }
+    outputFile << "ERROR 64  = "  << "\t";
 
     outputFile << error << "\t";
     outputFile << "UMBRAL OPTIMO = "  << "\t";

@@ -9,14 +9,19 @@
 #include "main.hpp"
 #include "contourUtilities.hpp"
 
+
+
 /*Functions prototype declaration*/
-MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> X, const double area);
+cspResult generateCpsWithSplineRefinement(std::vector<cv::Point> X, const double area);
 /*Functions implementation*/
-MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area);
 //only for debug
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
 
+cspResult computeCps(std::vector<cv::Point> contourPoints, const double area);
+double getAfinTansformationCost(std::vector<cv::Point> refA, std::vector<cv::Point> refB, int rotationIndex );
+double similarityMeasure (cspResult A, cspResult B, double alpha, double beta);
+std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb);
 
 double r_measure (std::vector<double> X,std::vector<double> Y) ;
 
@@ -24,7 +29,7 @@ double r_measure (std::vector<double> X,std::vector<double> Y) ;
  * This method is used to generate the cps matrix, using the cubic spline function constructed with the countour points.
  * TODO: Implement a class with this functions and attributes.
  */
-MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const double area) {
+cspResult generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const double area) {
 
     // Define aux arraysfac
 
@@ -134,7 +139,8 @@ MatrixXd generateCpsWithSplineRefinement(std::vector<cv::Point> vector, const do
 /**
  * Create the cps signature for a specific contour.
  */
-MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
+cspResult computeCps(std::vector<cv::Point> contourPoints, const double area) {
+   cspResult R;
     MatrixXd cps(contourPoints.size(),contourPoints.size());
     MatrixXd aux(contourPoints.size(),contourPoints.size());
     /*"initialize with "0"*/
@@ -167,7 +173,9 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
         }
     }
 
-    return cps;
+    R.CPSMatrix = cps;
+    R.pointSample = contourPoints;
+    return R;
 
 }
 
@@ -176,6 +184,49 @@ MatrixXd computeCps(std::vector<cv::Point> contourPoints, const double area) {
  * This method get the distance between two cps matrix.
  */
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
+    std::vector<double> result;
+    /* Number of point samples*/
+    double n = mta.rows();
+    MatrixXd matrix((int)n,(int)n);
+
+    /*Each value of k represent a different rotation*/
+    for(int k = 0; k <  n; k++) {
+        std::vector<int> vector;
+        for (double u = k - 1; u < n-1 + k; u++) {
+            if(u >= n-1)
+                vector.push_back((int)fmod( u , n-1));
+            else
+                vector.push_back((int)fmod( u , n-1)+1);
+
+        }
+        /*Calculate the euclidian distance*/
+        for(int i = 0; i <  n; i++) {
+            double sumDist = 0;
+            for(int j = 0; j < n; j++) {
+                sumDist += (mta(i,j)-mtb(vector[i],j)) * (mta(i,j)-mtb(vector[i],j));
+            }
+            matrix(i,k) = sqrt(sumDist);
+        }
+    }
+    /*the X(METRIC 1) coordenate is the minim sum and the Y cordenate is the index of that column on the matrix cpsA*/
+    cv::Point2d matchingData = minSum(matrix);
+    result.push_back(matchingData.y);
+    double maxValue = matrix(0,matchingData.y);
+    for(int i = 0; i <  n; i++) {
+        if(matrix(i,matchingData.y)>maxValue){
+            maxValue = matrix(i,matchingData.y);
+        }
+    }
+    result.push_back(maxValue );
+    result.push_back((matchingData.x/mta.rows()) );
+
+    return result;
+}
+
+/**
+ * This method get the distance between two cps matrix.
+ */
+std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb) {
     std::vector<double> result;
     /* Number of point samples*/
     double n = mta.rows();
@@ -212,8 +263,8 @@ std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
             maxValue = matrix(i,matchingData.y);
         }
     }
-    result.push_back(maxValue );
-    result.push_back((matchingData.x/mta.rows()) );
+    /*result.push_back(maxValue );*/
+    result.push_back((matchingData.x) );
 
     return result;
 }
@@ -281,5 +332,47 @@ double r_measure (std::vector<double> X,std::vector<double> Y) {
 
     return sum1 * sum2;
 }
+
+double getAfinTansformationCost(std::vector<cv::Point> refA, std::vector<cv::Point> refB, int rotationIndex ) {
+
+        MatrixXd P(refA.size(),3), Q(refA.size(),3);
+        int N = refA.size();
+
+        for (int i = 0; i < N; i++) {
+               P(i,0) = 1;
+              P(i,1) = refA[i].x;
+              P(i,2) = refA[i].y;
+
+                       Q(i,0) = 1;
+               Q(i,1) = refB[(i + rotationIndex) % N].x;
+                Q(i,2) = refB[(i + rotationIndex) % N].y;
+        }
+
+       MatrixXd pseudoInvertedP = pseudoInverse(P);
+       MatrixXd A = Q * pseudoInvertedP;
+
+               MatrixXd R = (A*P - Q);
+               double sum = 0.0;
+       for (int i = 0; i < R.rows(); i++) {
+               for (int j = 0; j < R.cols(); j++) {
+                       sum += R(i,j) > 0 ? R(i,j) : -1*R(i,j);
+                   }
+            }
+
+                return sum;
+    }
+
+double similarityMeasure (cspResult A, cspResult B, double alpha, double beta) {
+
+            std::vector<double> pointMatchingCostResult = getPointMatchingCost(A.CPSMatrix, B.CPSMatrix);
+
+               double rotationIx = pointMatchingCostResult[0];
+        double pointMatchingCost = pointMatchingCostResult[1];
+
+               double afinTransformationCost = getAfinTansformationCost(A.pointSample, B.pointSample, (int)rotationIx);
+
+                return alpha*pointMatchingCost + beta*afinTransformationCost;
+
+            }
 
 #endif //CPSWITHSPLINES_CPSFUNCTIONS_H

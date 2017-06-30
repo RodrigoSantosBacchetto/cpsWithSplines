@@ -12,6 +12,8 @@
 #include <iostream>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
+#include <Eigen/Core>
+#include <Eigen/SVD>
 #include <opencv2/highgui/highgui.hpp>
 #include <vector>
 #include <opencv2/imgproc.hpp>
@@ -29,6 +31,10 @@ using namespace Eigen;
 
 typedef Eigen::SparseMatrix<double> sMatrix;
 
+typedef struct {
+    MatrixXd CPSMatrix;
+    std::vector<cv::Point> pointSample;
+} cspResult;
 
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
@@ -38,32 +44,36 @@ typedef struct classResults {
     std::string class_name;
     std::vector<cv::Mat> images;
 
-    std::vector<MatrixXd> cp_signatures_16; // n
+    std::vector<cspResult> cp_signatures_16; // n
+    std::vector<cv::Point> prfA; // n
     std::vector<double> same_class_distances_16; // (n-1) / 2
     std::vector<double> diff_class_distances_16; // (n-1) / 2
-    std::double_t execution_time_16= 0;
+    std::double_t max_value_16= 0;
+    std::double_t error_value_16= 0;
 
-    std::vector<MatrixXd> cp_signatures_32; // n
+    std::vector<cspResult> cp_signatures_32; // n
     std::vector<double> same_class_distances_32; // (n-1) / 2
     std::vector<double> diff_class_distances_32; // (n-1) / 2
-    std::double_t execution_time_32= 0;
+    std::double_t max_value_32= 0;
+    std::double_t error_value_32= 0;
 
-    std::vector<MatrixXd> cp_signatures_64;
+    std::vector<cspResult> cp_signatures_64;
     std::vector<double> same_class_distances_64;
     std::vector<double> diff_class_distances_64;
-    std::double_t execution_time_64= 0;
+    std::double_t max_value_64= 0;
+    std::double_t error_value_64= 0;
 
-    std::vector<MatrixXd> cp_signatures_86;
+    std::vector<cspResult> cp_signatures_86;
     std::vector<double> same_class_distances_86;
     std::vector<double> diff_class_distances_86;
     std::double_t execution_time_86= 0;
 
-    std::vector<MatrixXd> cp_signatures_128;
+    std::vector<cspResult> cp_signatures_128;
     std::vector<double> same_class_distances_128;
     std::vector<double> diff_class_distances_128;
     std::double_t execution_time_128= 0;
 
-    std::vector<MatrixXd> cp_signatures_256;
+    std::vector<cspResult> cp_signatures_256;
     std::vector<double> same_class_distances_256;
     std::vector<double> diff_class_distances_256;
     std::double_t execution_time_256 = 0;
