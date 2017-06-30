@@ -20,210 +20,227 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClassesDirectories) {
     std::vector<classResults> resultsByClass;
     //Explore class folders
-    for(int i = 0; i < imageClassesDirectories.size(); i++){
-        classResults currentResult;
-
-        //Store class name
-        currentResult.class_name = getClassNameFromPath(imageClassesDirectories[i]);
-
-        //Read all class images
-        currentResult.images = readImagesFromDirectory(imageClassesDirectories[i]);
-
-        //Compute results for each image of the class
-        std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name;
-
-        for(int j = 0; j < (currentResult.images.size()-1)/2; j++){
-            /*If j=0 calc the first image cps data*/
-            if(j==0) {
-                    std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
-
-                /* Calculate the area for the contour in order to normalize*/
-                const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
-                cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_16.push_back(cpsMatrix);
-
-                sampledPoints = sampleContourPoints(fullContour, 64);
-                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_32.push_back(cpsMatrix);
-
-                sampledPoints = sampleContourPoints(fullContour, 128);
-                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
-                currentResult.cp_signatures_64.push_back(cpsMatrix);
-            }
-
-            /*Similar image*/
-            std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j+1], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaSimilar = sqrt(contourArea(fullContourSimilar));
-
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
-            cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrix,0.5,0.5));
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrix,0.5,0.5));
-
-            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
-            cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
-            currentResult.same_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrix,0.5,0.5));
-
-            /*different image*/
-            std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j+6], ONLY_EXTERNAL_CONTOUR);
-
-            /* Calculate the area for the contour in order to normalize*/
-            const double areaDifferent = sqrt(contourArea(fullContourDifferent));
-
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
-            cspResult cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrixDiff,0.5,0.5));
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
-            cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrixDiff,0.5,0.5));
-
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
-            cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
-            currentResult.diff_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrixDiff,0.5,0.5));
-
-        }
-        cvWaitKey( 0 );
-        resultsByClass.push_back(currentResult);
-
-        std::cout << std::endl << "Finished processing class [ " << i << " ]: " << currentResult.class_name << std::endl;
-    }
 
     std::fstream outputFile;
     outputFile.open("C:\\Users\\Santos\\Desktop\\pruebaR\\cps_plus_splines.csv", std::ios_base::out);
+    for(double alfa = 0; alfa < 1; alfa = alfa + 0.1 ) {
+        for (int i = 0; i < imageClassesDirectories.size(); i++) {
+            classResults currentResult;
 
-    outputFile << "CLASS\t16_HIT_MAX_DISTANCE_SAME\t32_HIT_MAX_DISTANCE_SAME\t64_HIT_MAX_DISTANCE_SAME\t16_HIT_MAX_DISTANCE_DIFF\t32_HIT_MAX_DISTANCE_DIFF\t64_HIT_MAX_DISTANCE_DIFF" << std::endl;
-    double maxValue = 0;
-    for(int i = 0; i < resultsByClass.size(); i++) {
+            //Store class name
+            currentResult.class_name = getClassNameFromPath(imageClassesDirectories[i]);
 
-        outputFile << resultsByClass[i].class_name << "\t";
+            //Read all class images
+            currentResult.images = readImagesFromDirectory(imageClassesDirectories[i]);
 
-        /* Get the max value and min value for a vector of double */
-        double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
+            //Compute results for each image of the class
+            std::cout << std::endl << "Started processing class [ " << i << " ]: " << currentResult.class_name;
 
-        outputFile << valueSame32 << "\t";
+            for (int j = 0; j < (currentResult.images.size() - 1) / 2; j++) {
+                /*If j=0 calc the first image cps data*/
+                if (j == 0) {
+                    std::vector<cv::Point> fullContour = getKuimContour(currentResult.images[j], ONLY_EXTERNAL_CONTOUR);
 
-        double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
+                    /* Calculate the area for the contour in order to normalize*/
+                    const double area = sqrt(contourArea(fullContour));
+                    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+                    cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                    currentResult.cp_signatures_16.push_back(cpsMatrix);
 
-        outputFile << valueSame64 << "\t";
+                    sampledPoints = sampleContourPoints(fullContour, 64);
+                    cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                    currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-        double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
+                    sampledPoints = sampleContourPoints(fullContour, 128);
+                    cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
+                    currentResult.cp_signatures_64.push_back(cpsMatrix);
+                }
 
-        outputFile << valueSame128 << "\t";
+                /*Similar image*/
+                std::vector<cv::Point> fullContourSimilar = getKuimContour(currentResult.images[j + 1],
+                                                                           ONLY_EXTERNAL_CONTOUR);
 
-        outputFile << resultsByClass[i].class_name << "\t";
+                /* Calculate the area for the contour in order to normalize*/
+                const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-        /* Get the max value and min value for a vector of double */
-        valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+                cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
+                currentResult.same_class_distances_16.push_back(
+                        similarityMeasure(currentResult.cp_signatures_16[0], cpsMatrix, alfa, 1-alfa));
 
-        outputFile << valueSame32 << "\t";
+                sampledPoints = sampleContourPoints(fullContourSimilar, 64);
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
+                currentResult.same_class_distances_32.push_back(
+                        similarityMeasure(currentResult.cp_signatures_32[0], cpsMatrix, alfa, 1-alfa));
+
+                sampledPoints = sampleContourPoints(fullContourSimilar, 128);
+                cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
+                currentResult.same_class_distances_64.push_back(
+                        similarityMeasure(currentResult.cp_signatures_64[0], cpsMatrix, alfa, 1-alfa));
+
+                /*different image*/
+                std::vector<cv::Point> fullContourDifferent = getKuimContour(currentResult.images[j + 6],
+                                                                             ONLY_EXTERNAL_CONTOUR);
+
+                /* Calculate the area for the contour in order to normalize*/
+                const double areaDifferent = sqrt(contourArea(fullContourDifferent));
+
+                std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
+                cspResult cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
+                currentResult.diff_class_distances_16.push_back(
+                        similarityMeasure(currentResult.cp_signatures_16[0], cpsMatrixDiff, alfa, 1-alfa));
+
+                sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
+                cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
+                currentResult.diff_class_distances_32.push_back(
+                        similarityMeasure(currentResult.cp_signatures_32[0], cpsMatrixDiff, alfa, 1-alfa));
+
+                sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
+                cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
+                currentResult.diff_class_distances_64.push_back(
+                        similarityMeasure(currentResult.cp_signatures_64[0], cpsMatrixDiff, alfa, 1-alfa));
+
+            }
+            cvWaitKey(0);
+            resultsByClass.push_back(currentResult);
+
+            std::cout << std::endl << "Finished processing class [ " << i << " ]: " << currentResult.class_name <<
+            std::endl;
+        }
+
+        outputFile <<
+        "CLASS\t16_HIT_MAX_DISTANCE_SAME\t32_HIT_MAX_DISTANCE_SAME\t64_HIT_MAX_DISTANCE_SAME\t16_HIT_MAX_DISTANCE_DIFF\t32_HIT_MAX_DISTANCE_DIFF\t64_HIT_MAX_DISTANCE_DIFF" <<
+        std::endl;
+        double maxValue = 0;
+        for (int i = 0; i < resultsByClass.size(); i++) {
+
+            outputFile << resultsByClass[i].class_name << "\t";
+
+            /* Get the max value and min value for a vector of double */
+            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16, "max");
+
+            outputFile << valueSame32 << "\t";
+            if(maxValue<valueSame32)
+                maxValue = valueSame32;
+            double valueSame64 = getMaxMinValue(resultsByClass[i].same_class_distances_32, "max");
+
+            outputFile << valueSame64 << "\t";
+            if(maxValue<valueSame64)
+                maxValue = valueSame64;
+            double valueSame128 = getMaxMinValue(resultsByClass[i].same_class_distances_64, "max");
+
+            outputFile << valueSame128 << "\t";
+            if(maxValue<valueSame128)
+                maxValue = valueSame128;
+            outputFile << resultsByClass[i].class_name << "\t";
+
+            /* Get the max value and min value for a vector of double */
+            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16, "min");
+
+            outputFile << valueSame32 << "\t";
+            if(maxValue<valueSame32)
+                maxValue = valueSame32;
+
+            valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32, "min");
+
+            outputFile << valueSame64 << "\t";
+            if(maxValue<valueSame64)
+                maxValue = valueSame64;
+            valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64, "min");
+
+            outputFile << valueSame128 << std::endl;
+            if(maxValue<valueSame128)
+                maxValue = valueSame128;
+
+        }
+        double error = 100, umbralOptimo;
+        for (double umbral = 0; umbral < maxValue; umbral = umbral + (maxValue/10000)) {
+            double FP = 0, FN = 0;
+            for (int i = 0; i < resultsByClass.size(); i++) {
+
+                /* Get the max value and min value for a vector of double */
+                double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16, "max");
+                if (valueSame32 > umbral) {
+                    FP++;
+                }
 
 
-        valueSame64 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
+                valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16, "min");
+                if (valueSame32 < umbral) {
+                    FN++;
+                }
+            }
+            if (error > ((FP + FN) / (2 * 30))) {
+                error = ((FP + FN) / (2 * 30));
+                umbralOptimo = umbral;
+            }
+        }
+        outputFile << "ERROR 16  = " << "\t";
 
-        outputFile << valueSame64 << "\t";
+        outputFile << error << "\t";
+        outputFile << "UMBRAL OPTIMO = " << "\t";
 
-        valueSame128 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
+        outputFile << umbralOptimo << "\t";
 
-        outputFile << valueSame128 << std::endl;
+        error = 100;
+        for (double umbral = 0; umbral < maxValue; umbral = umbral + (maxValue/10000)) {
+            double FP = 0, FN = 0;
+            for (int i = 0; i < resultsByClass.size(); i++) {
+
+                /* Get the max value and min value for a vector of double */
+                double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32, "max");
+                if (valueSame32 > umbral) {
+                    FP++;
+                }
+
+                /* Get the max value and min value for a vector of double */
+                valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32, "min");
+                if (valueSame32 < umbral) {
+                    FN++;
+                }
+            }
+            if (error > ((FP + FN) / (2 * 30))) {
+                error = ((FP + FN) / (2 * 30));
+                umbralOptimo = umbral;
+            }
+        }
+        outputFile << "ERROR 32  = " << "\t";
+        outputFile << error << "\t";
+        outputFile << "UMBRAL OPTIMO = " << "\t";
+        outputFile << umbralOptimo << "\t";
+
+        error = 100;
+        for (double umbral = 0; umbral < maxValue; umbral = umbral + (maxValue/10000)) {
+            double FP = 0, FN = 0;
+            for (int i = 0; i < resultsByClass.size(); i++) {
+
+                /* Get the max value and min value for a vector of double */
+                double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_64, "max");
+                if (valueSame32 > umbral) {
+                    FP++;
+                }
+
+                /* Get the max value and min value for a vector of double */
+                valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_64, "min");
+                if (valueSame32 < umbral) {
+                    FN++;
+                }
+            }
+            if (error > ((FP + FN) / (2 * 30))) {
+                error = ((FP + FN) / (2 * 30));
+                umbralOptimo = umbral;
+            }
+        }
+        outputFile << "ERROR 64  = " << "\t";
+        outputFile << error << "\t";
+        outputFile << "UMBRAL OPTIMO = " << "\t";
+        outputFile << umbralOptimo << "\t";
+        outputFile << "alfa y beta = " << "\t";
+        outputFile << alfa << "-" << 1-alfa << "\t";
 
 
 
     }
-    double error = 100, umbralOptimo;
-    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
-        double FP=0, FN=0;
-        for(int i = 0; i < resultsByClass.size(); i++) {
-
-            /* Get the max value and min value for a vector of double */
-            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_16 , "max");
-            if(valueSame32>umbral){
-                FP++;
-            }
-
-
-            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_16 , "min");
-            if(valueSame32<umbral){
-                FN++;
-            }
-        }
-        if(error> ((FP+FN)/(2*30))){
-            error = ((FP+FN)/(2*30));
-            umbralOptimo = umbral;
-        }
-    }
-    outputFile << "ERROR 16  = "  << "\t";
-
-    outputFile << error << "\t";
-    outputFile << "UMBRAL OPTIMO = "  << "\t";
-
-    outputFile << umbralOptimo << "\t";
-
-    error = 100;
-    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
-        double FP=0, FN=0;
-        for(int i = 0; i < resultsByClass.size(); i++) {
-
-            /* Get the max value and min value for a vector of double */
-            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_32 , "max");
-            if(valueSame32>umbral){
-                FP++;
-            }
-
-            /* Get the max value and min value for a vector of double */
-            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_32 , "min");
-            if(valueSame32<umbral){
-                FN++;
-            }
-        }
-        if(error> ((FP+FN)/(2*30))){
-            error = ((FP+FN)/(2*30));
-            umbralOptimo = umbral;
-        }
-    }
-    outputFile << "ERROR 32  = "  << "\t";
-
-    outputFile << error << "\t";
-    outputFile << "UMBRAL OPTIMO = "  << "\t";
-
-    outputFile << umbralOptimo << "\t";
-
-    error = 100;
-    for(double umbral = 0; umbral < 2000; umbral = umbral + 1) {
-        double FP=0, FN=0;
-        for(int i = 0; i < resultsByClass.size(); i++) {
-
-            /* Get the max value and min value for a vector of double */
-            double valueSame32 = getMaxMinValue(resultsByClass[i].same_class_distances_64 , "max");
-            if(valueSame32>umbral){
-                FP++;
-            }
-
-            /* Get the max value and min value for a vector of double */
-            valueSame32 = getMaxMinValue(resultsByClass[i].diff_class_distances_64 , "min");
-            if(valueSame32<umbral){
-                FN++;
-            }
-        }
-        if(error> ((FP+FN)/(2*30))){
-            error = ((FP+FN)/(2*30));
-            umbralOptimo = umbral;
-        }
-    }
-    outputFile << "ERROR 64  = "  << "\t";
-
-    outputFile << error << "\t";
-    outputFile << "UMBRAL OPTIMO = "  << "\t";
-
-    outputFile << umbralOptimo << "\t";
-
-
     outputFile.close();
 }
 
