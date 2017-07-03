@@ -245,13 +245,10 @@ std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb) {
         /*Calculate the euclidian distance*/
         for(int i = 0; i <  n; i++) {
             double sumDist = 0;
-            std::vector<double> X;
-            std::vector<double> Y;
             for(int j = 0; j < n; j++) {
-                X.push_back(mta(i,j));
-                Y.push_back(mtb(vector[i],j));
+                sumDist += (mta(i,j)-mtb(vector[i],j)) * (mta(i,j)-mtb(vector[i],j));
             }
-            matrix(i,k) = r_measure(X,Y);
+            matrix(i,k) = sqrt(sumDist);
         }
     }
     /*the X(METRIC 1) coordenate is the minim sum and the Y cordenate is the index of that column on the matrix cpsA*/

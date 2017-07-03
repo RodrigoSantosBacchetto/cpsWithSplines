@@ -39,15 +39,15 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
 
                 /* Calculate the area for the contour in order to normalize*/
                 const double area = sqrt(contourArea(fullContour));
-                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 32);
+                std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, 64);
                 cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_16.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 64);
+                sampledPoints = sampleContourPoints(fullContour, 8);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_32.push_back(cpsMatrix);
 
-                sampledPoints = sampleContourPoints(fullContour, 128);
+                sampledPoints = sampleContourPoints(fullContour, 8);
                 cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, area);
                 currentResult.cp_signatures_64.push_back(cpsMatrix);
             }
@@ -58,15 +58,15 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
 
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 64);
             cspResult cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrix,0.5,0.5));
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 64);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 8);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrix,0.5,0.5));
 
-            sampledPoints = sampleContourPoints(fullContourSimilar, 128);
+            sampledPoints = sampleContourPoints(fullContourSimilar, 8);
             cpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             currentResult.same_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrix,0.5,0.5));
 
@@ -76,15 +76,15 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             /* Calculate the area for the contour in order to normalize*/
             const double areaDifferent = sqrt(contourArea(fullContourDifferent));
 
-            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 32);
+            std::vector<cv::Point> sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
             cspResult cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
             currentResult.diff_class_distances_16.push_back(similarityMeasure(currentResult.cp_signatures_16[0],cpsMatrixDiff,0.5,0.5));
 
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 64);
+            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 8);
             cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
             currentResult.diff_class_distances_32.push_back(similarityMeasure(currentResult.cp_signatures_32[0],cpsMatrixDiff,0.5,0.5));
 
-            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 128);
+            sampledPointsDifferent = sampleContourPoints(fullContourDifferent, 8);
             cpsMatrixDiff = generateCpsWithSplineRefinement(sampledPointsDifferent, areaDifferent);
             currentResult.diff_class_distances_64.push_back(similarityMeasure(currentResult.cp_signatures_64[0],cpsMatrixDiff,0.5,0.5));
 
