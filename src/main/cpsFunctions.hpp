@@ -226,7 +226,7 @@ std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb) {
 /**
  * This method get the distance between two cps matrix.
  */
-std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb) {
+std::vector<double>  getPointMatchingCost(MatrixXd mta, MatrixXd mtb) {
     std::vector<double> result;
     /* Number of point samples*/
     double n = mta.rows();
@@ -351,8 +351,8 @@ double getAfinTansformationCost(std::vector<cv::Point> refA, std::vector<cv::Poi
        MatrixXd pseudoInvertedP = pseudoInverse(P);
        MatrixXd A = Q * pseudoInvertedP;
 
-               MatrixXd R = (A*P - Q);
-               double sum = 0.0;
+       MatrixXd R = (A*P - Q);
+       double sum = 0.0;
        for (int i = 0; i < R.rows(); i++) {
                for (int j = 0; j < R.cols(); j++) {
                        sum += R(i,j) > 0 ? R(i,j) : -1*R(i,j);
@@ -370,9 +370,9 @@ double similarityMeasure (cspResult A, cspResult B, double alpha, double beta) {
         double pointMatchingCost = pointMatchingCostResult[1];
 
                double afinTransformationCost = getAfinTansformationCost(A.pointSample, B.pointSample, (int)rotationIx);
+               // std::cout << std::endl << "cps measure [ " << pointMatchingCost/A.pointSample.size() << " ]: " << "afin measure [ " << afinTransformationCost << " ]: " << std::endl;
+                return (alpha*pointMatchingCost)/A.pointSample.size() + beta*afinTransformationCost;
 
-                return alpha*pointMatchingCost + beta*afinTransformationCost;
-
-            }
+}
 
 #endif //CPSWITHSPLINES_CPSFUNCTIONS_H

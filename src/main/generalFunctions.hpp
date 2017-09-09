@@ -63,15 +63,11 @@ int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols) 
  * This method get the max or min value on a vector of doubles.
  */
 double getMaxMinValue(std::vector<double> vector, std::string valueType) {
-    double tempVal = vector[0];
+    double tempVal = 0;
     for(int i = 0; i < vector.size(); i++){
-        if("min"==valueType && tempVal>vector[i]){
-            tempVal = vector[i];
-        } else if("max"==valueType && tempVal<vector[i]){
-            tempVal = vector[i];
-        }
+        tempVal = tempVal + vector[i];
     }
-    return tempVal;
+    return tempVal/vector.size();
 }
 
 template<typename _Matrix_Type_>

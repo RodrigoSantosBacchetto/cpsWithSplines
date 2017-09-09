@@ -8,8 +8,8 @@ int main() {
     std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
-    largeDeformationExperimentWithSplineCps(imageClassesDirectories);/*
-    largeDeformationExperimentWithOriginalCps(imageClassesDirectories);*/
+    largeDeformationExperimentWithSplineCps(imageClassesDirectories);
+/*    largeDeformationExperimentWithOriginalCps(imageClassesDirectories);*/
 
 
 
