@@ -1,34 +1,21 @@
 
+#include "../experiments/bigExperimentForTresholdAndErrorRate.hpp"
 
-#include "filesManagementFunctions.hpp"
-#include "../experiments/largeDeformationExperiment.hpp"
+int main(int argc, char *argv[]){
 
-int main() {
+    //define experiment parameters here
+    std::string imageDbBasePath = "D:\\FP-UNA\\TesisFinalExperiments\\ImageDatabases\\MPEG7_SeparationExperiment\\";
+    std::string resultsBasePath = "D:\\FP-UNA\\TesisFinalExperiments\\ExperimentResults\\";
+    int sampleSize = atoi(argv[1]);
+    double noiseLevel = 25.0;
 
-    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
-    std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
+    Coefficients = initializeEquationSolver(sampleSize);
 
-    largeDeformationExperimentWithOriginalCps(imageClassesDirectories);
-    largeDeformationExperimentWithSplineCps(imageClassesDirectories);
+    // run the experiment, based on the imported header file
+    int rs = runExperiment(imageDbBasePath, resultsBasePath, sampleSize, noiseLevel);
+    std::cout << rs;
 
-    cvWaitKey( 0 );
-//    //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
-//    std::vector<cv::Point> fullContour = getKuimContour(allImages[0], ONLY_EXTERNAL_CONTOUR);
-//    std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContour, sample);
-//
-//    MatrixXd mta = generateCpsWithSplineRefinement(sampledPoints);
-//    MatrixXd mtb = generateCpsWithSplineRefinement(sampledPoints);
-//
-//    /* the first value is the column index with the minimum sum*/
-//    /* the second value is the max distance between two matrix*/
-//    /* the third value is the promedian distance between two matrix*/
-//    std::vector<double> dist = smCpsRm( mta, mtb);
-//    cvWaitKey();
 }
-
-
-
-
 
 
 

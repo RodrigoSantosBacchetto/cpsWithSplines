@@ -8,7 +8,11 @@
 #include "main.hpp"
 #include<Eigen/Core>
 #include<Eigen/SVD>
+#include <ctime>
 
+std::vector<cv::Point> getImagePoints (cv::Mat image);
+std::vector<double> getRow(MatrixXd cpsMatrix, int rowIx);
+std::string barraTes (int q);
 cv::Point2d minSum(cv::Mat mat);
 int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols);
 double getMaxMinValue(std::vector<double> vector,std::string valueType);

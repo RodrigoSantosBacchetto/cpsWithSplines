@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 project(cpsWithSplines)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 #Configuration type
 set(CMAKE_CONFIGURATION_TYPES "Debug")
@@ -31,12 +31,12 @@ SET(SOURCE_FILES
         # Main
         src/main/main.hpp
         src/main/cpsFunctions.hpp
-        src/experiments/largeDeformationExperiment.hpp
         src/main/drawUtilityClasses.hpp
         src/main/filesManagementFunctions.hpp
         src/main/generalFunctions.hpp
         src/main/contourUtilities.hpp
-        src/main/main.cpp)
+        src/main/noiseFunctions.hpp
+        src/main/main.cpp src/experiments/bigExperimentForTresholdAndErrorRate.hpp)
 
 add_executable(cpsWithSplines ${SOURCE_FILES})
 

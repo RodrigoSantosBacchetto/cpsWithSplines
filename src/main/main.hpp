@@ -19,6 +19,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <fstream>
+#include <map>
 #include "dirent.h"
 
 #define MINUS_ONE 99
@@ -32,26 +33,5 @@ typedef Eigen::SparseMatrix<double> sMatrix;
 
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
-
-
-typedef struct classResults {
-    std::string class_name;
-    std::vector<cv::Mat> images;
-
-    std::vector<MatrixXd> cp_signatures_32; // n
-    std::vector<double> same_class_distances_32; // (n-1) / 2
-    std::vector<double> diff_class_distances_32; // (n-1) / 2
-
-    std::vector<MatrixXd> cp_signatures_64;
-    std::vector<double> same_class_distances_64;
-    std::vector<double> diff_class_distances_64;
-
-    std::vector<MatrixXd> cp_signatures_128;
-    std::vector<double> same_class_distances_128;
-    std::vector<double> diff_class_distances_128;
-
-} classResults;
-
-
 
 #endif //CPSWITHSPLINES_MAIN_H
