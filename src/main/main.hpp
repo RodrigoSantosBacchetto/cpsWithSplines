@@ -36,6 +36,10 @@ typedef struct {
     std::vector<cv::Point> pointSample;
 } cspResult;
 
+typedef struct {
+    std::vector<cv::Point2d> d1;
+} d1;
+
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
 
@@ -47,7 +51,9 @@ typedef struct classResults {
     std::vector<cspResult> cp_signatures_16; // n
     std::vector<cv::Point> prfA; // n
     std::vector<double> same_class_distances_16; // (n-1) / 2
+    std::vector<cv::Point2d> same_class_d1; // (n-1) / 2
     std::vector<double> diff_class_distances_16; // (n-1) / 2
+    std::vector<cv::Point2d> diff_class_d1; // (n-1) / 2
     std::double_t max_value_16= 0;
     std::double_t error_value_16= 0;
 

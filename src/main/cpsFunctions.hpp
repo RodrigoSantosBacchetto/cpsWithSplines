@@ -20,7 +20,7 @@ cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
 
 cspResult computeCps(std::vector<cv::Point> contourPoints, const double area);
 double getAfinTansformationCost(std::vector<cv::Point> refA, std::vector<cv::Point> refB, int rotationIndex );
-double similarityMeasure (cspResult A, cspResult B, double alpha, double beta);
+cv::Point2d similarityMeasure (cspResult A, cspResult B, double alpha, double beta);
 std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb);
 
 double r_measure (std::vector<double> X,std::vector<double> Y) ;
@@ -362,16 +362,17 @@ double getAfinTansformationCost(std::vector<cv::Point> refA, std::vector<cv::Poi
                 return sum;
     }
 
-double similarityMeasure (cspResult A, cspResult B, double alpha, double beta) {
+cv::Point2d similarityMeasure (cspResult A, cspResult B, double alpha, double beta) {
 
-            std::vector<double> pointMatchingCostResult = getPointMatchingCost(A.CPSMatrix, B.CPSMatrix);
+    std::vector<double> pointMatchingCostResult = getPointMatchingCost(A.CPSMatrix, B.CPSMatrix);
+    double rotationIx = pointMatchingCostResult[0];
+    double pointMatchingCost = pointMatchingCostResult[1];
+    double afinTransformationCost = getAfinTansformationCost(A.pointSample, B.pointSample, (int)rotationIx);
+    cv::Point2d d1;
+    d1.x = pointMatchingCost;
+    d1.y = afinTransformationCost;
 
-               double rotationIx = pointMatchingCostResult[0];
-        double pointMatchingCost = pointMatchingCostResult[1];
-
-               double afinTransformationCost = getAfinTansformationCost(A.pointSample, B.pointSample, (int)rotationIx);
-               // std::cout << std::endl << "cps measure [ " << pointMatchingCost/A.pointSample.size() << " ]: " << "afin measure [ " << afinTransformationCost << " ]: " << std::endl;
-                return (alpha*pointMatchingCost)/A.pointSample.size() + beta*afinTransformationCost;
+    return d1;
 
 }
 
