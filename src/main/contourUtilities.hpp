@@ -97,7 +97,7 @@ std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContour
             }
         }
     }
-
+    cvReleaseImage(&allBlack);
     return contour;
 
 
