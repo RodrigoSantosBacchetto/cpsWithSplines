@@ -91,6 +91,7 @@ std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContour
                     next = getNext(x, y, last, data1, totalRows, totalCols);
 
                     cv::Point contourPoint = cvPoint(x,y);
+                    //std::cout << "I'm here sucker!! ";
                     contour.push_back(contourPoint);
 
                 }

@@ -1,5 +1,5 @@
 
-#include "../experiments/bigExperimentForTresholdAndErrorRate.hpp"
+#include "../experiments/bullsEyeExperiment.hpp"
 
 int main(int argc, char *argv[]){
 
@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     Coefficients = initializeEquationSolver(sampleSize);
 
     // run the experiment, based on the imported header file
-    int rs = runExperiment(imageDbBasePath, resultsBasePath, sampleSize, noiseLevel);
+    int rs = runExperiment(imageDbBasePath, resultsBasePath, "Refined", sampleSize, noiseLevel);
     std::cout << rs;
 
 }

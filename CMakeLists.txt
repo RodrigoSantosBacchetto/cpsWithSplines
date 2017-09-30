@@ -36,7 +36,7 @@ SET(SOURCE_FILES
         src/main/generalFunctions.hpp
         src/main/contourUtilities.hpp
         src/main/noiseFunctions.hpp
-        src/main/main.cpp src/experiments/bigExperimentForTresholdAndErrorRate.hpp)
+        src/main/main.cpp src/experiments/bullsEyeExperiment.hpp)
 
 add_executable(cpsWithSplines ${SOURCE_FILES})
 
