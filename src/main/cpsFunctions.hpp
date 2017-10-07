@@ -217,7 +217,7 @@ CPSResult computeCps(std::vector<cv::Point> contourPoints, const double area) {
 
 double similarityMeasure (CPSResult A, CPSResult B, double alpha, double beta) {
 
-    std::vector<double> pointMatchingCostResult = getPointMatchingCostUsingEuclideanDistance(A.CPSMatrix, B.CPSMatrix);
+    std::vector<double> pointMatchingCostResult = getPointMatchingCost(A.CPSMatrix, B.CPSMatrix);
 
     double rotationIx = pointMatchingCostResult[0];
     double pointMatchingCost = pointMatchingCostResult[1];

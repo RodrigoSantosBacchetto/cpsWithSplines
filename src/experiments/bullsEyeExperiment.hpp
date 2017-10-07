@@ -168,7 +168,10 @@ int runExperiment(std::string imgDbBasePath, std::string resultsFolderBasePath, 
     fileEntry << "\nBull's Eye Measure: " << k/(20*1400);
     resultsFile << fileEntry.str();
     resultsFile.close();
-    std::cout << "Bull's Eye measure: " << k/(20*1400);
+    std::cout << "Bull's Eye measure: " << k/(20*1400) << "\n\n";
+
+
+    printResults(allImageResults);
 
     return 0;
 }
