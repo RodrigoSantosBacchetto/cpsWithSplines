@@ -46,7 +46,6 @@ std::vector<cv::Point> extractContourPoints(std::vector<std::vector<cv::Point>> 
 }
 
 std::vector<cv::Point> getKuimContour(cv::Mat originalImage, int numberOfContours) {
-
     cv::Mat data1;
     cv::threshold(originalImage, data1, 192.0, 255.0,CV_THRESH_BINARY);
 

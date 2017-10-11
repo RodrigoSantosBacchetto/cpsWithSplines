@@ -5,10 +5,16 @@
 
 int main() {
 
-    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
+    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\pruebas\\";
+    std::string parentReferenceDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\referencias\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
-    largeDeformationExperimentWithSplineCps(imageClassesDirectories);
+    std::cout << std::endl << "url1 [ " << imageClassesDirectories[0] << std::endl;
+    std::cout << std::endl << "url2 [ " << parentReferenceDirectory << std::endl;
+    std::cout << std::endl << "url3 [ " << parentReferenceDirectory.c_str() << std::endl;
+
+    largeDeformationExperimentWithSplineCps(imageClassesDirectories, parentReferenceDirectory);
+
 /*    largeDeformationExperimentWithOriginalCps(imageClassesDirectories);*/
 
 
