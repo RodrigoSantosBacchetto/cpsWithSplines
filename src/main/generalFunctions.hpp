@@ -32,7 +32,7 @@ cv::Point2d minSum(MatrixXd mat) {
     int index = 0;
     for(int j = 0; j <  vector.size(); j++) {
         // 10 is a percentage that indicates, that we are going to consider only 0.2 percent of the rotations
-        if(vector[j]<min and (j<=( vector.size()/6) or j>=((vector.size()/6)*5))){
+        if(vector[j]<min and (j<=( vector.size()/32) or j>=((vector.size()/32)*31))){
             min = vector[j];
             index = j;
         }

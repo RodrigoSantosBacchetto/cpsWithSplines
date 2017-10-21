@@ -42,7 +42,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
             std::vector<cv::Point> fullContourSimilar = getKuimContour(folderImages[j], ONLY_EXTERNAL_CONTOUR);
             /* Calculate the area for the contour in order to normalize*/
             const double areaSimilar = sqrt(contourArea(fullContourSimilar));
-            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 32);
+            std::vector<cv::Point> sampledPoints = sampleContourPoints(fullContourSimilar, 128);
             cspResult simpleImageCpsMatrix = generateCpsWithSplineRefinement(sampledPoints, areaSimilar);
             cpsResults.push_back(simpleImageCpsMatrix);
         }
@@ -54,7 +54,7 @@ void largeDeformationExperimentWithSplineCps(std::vector<std::string> imageClass
         std::cout << std::endl << "Started processing  [ " << r << " ]: ";
         /* Calculate the area for the contour in order to normalize*/
         const double referenceArea = sqrt(contourArea(referenceFullContour));
-        std::vector<cv::Point> referenceSampledPoints = sampleContourPoints(referenceFullContour, 32);
+        std::vector<cv::Point> referenceSampledPoints = sampleContourPoints(referenceFullContour, 128);
         cspResult referenceCpsMatrix = generateCpsWithSplineRefinement(referenceSampledPoints, referenceArea);
 
 
