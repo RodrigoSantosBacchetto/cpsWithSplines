@@ -56,6 +56,7 @@ CPSResult computeCps(std::vector<cv::Point> contourPoints, const double area);
 std::vector<double> smCpsRm(MatrixXd mta, MatrixXd mtb);
 cv::Point2d matchingCps(cvx::CpsMatrix cpsA, cvx::CpsMatrix cpsB);
 double getAfinTansformationCost(std::vector<cv::Point> refA, std::vector<cv::Point> refB, int rotationIndex );
+std::vector<double> getPointMatchingCost2(MatrixXd mta, MatrixXd mtb, float percentageToUse);
 double similarityMeasure (CPSResult A, CPSResult B, double alpha, double beta);
 std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb);
 double r_measure (std::vector<double> X,std::vector<double> Y) ;
@@ -257,6 +258,63 @@ std::vector<double> getPointMatchingCost(MatrixXd mta, MatrixXd mtb) {
             for(int j = 0; j < n; j++) {
                 X.push_back(mta(i,j));
                 Y.push_back(mtb(vector[i],j));
+            }
+            matrix(i,k) = r_measure(X,Y);
+        }
+    }
+    /*the X(METRIC 1) coordinate is the minim sum and the Y coordinate is the index of that column on the matrix cpsA*/
+    cv::Point2d matchingData = minSum(matrix);
+    result.push_back(matchingData.y);
+    double maxValue = matrix(0,matchingData.y);
+    for(int i = 0; i <  n; i++) {
+        if(matrix(i,matchingData.y)>maxValue){
+            maxValue = matrix(i,matchingData.y);
+        }
+    }
+    //result.push_back(maxValue);
+    result.push_back((matchingData.x) ); // promedio
+
+    return result;
+}
+
+std::vector<double> getPointMatchingCost2(MatrixXd mta, MatrixXd mtb, float percentageToUse) {
+    std::vector<double> result;
+    /* Number of point samples*/
+    double originalSampleSize = mta.rows();
+    double newSampleSize = originalSampleSize * percentageToUse;
+    MatrixXd matrix((int)floor(newSampleSize),(int)floor(newSampleSize));
+
+    double increment = originalSampleSize/floor(newSampleSize);
+
+    std::vector<int> validIds;
+    int validId = 0;
+    for (int i = 0; i < floor(newSampleSize); i++){
+        validIds.push_back(validId);
+        validId = (int)floor(validId + increment);
+        if (validId > floor(newSampleSize))
+            validId = (int)floor(newSampleSize);
+    }
+
+    double n = floor(newSampleSize);
+    /*Each value of k represent a different rotation*/
+    for(int k = 0; k <  n; k++) {
+
+        std::vector<int> vector;
+        for (double u = k - 1; u < n-1 + k; u++) {
+            if(u >= n-1)
+                vector.push_back((int)fmod( u , n-1));
+            else
+                vector.push_back((int)fmod( u , n-1)+1);
+
+        }
+
+        /*Calculate the euclidean distance*/
+        for(int i = 0; i <  n; i++) {
+            std::vector<double> X;
+            std::vector<double> Y;
+            for(int j = 0; j < originalSampleSize; j++) {
+                X.push_back(mta(validIds[i],j));
+                Y.push_back(mtb(validIds[vector[i]],j));
             }
             matrix(i,k) = r_measure(X,Y);
         }
