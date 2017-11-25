@@ -216,7 +216,7 @@ CPSResult computeCps(std::vector<cv::Point> contourPoints, const double area) {
 
 }
 
-double similarityMeasure (CPSResult A, CPSResult B, double alpha, double beta) {
+double  similarityMeasure (CPSResult A, CPSResult B, double alpha, double beta) {
 
     std::vector<double> pointMatchingCostResult = getPointMatchingCostUsingEuclideanDistance(A.CPSMatrix, B.CPSMatrix);
 
@@ -316,7 +316,7 @@ std::vector<double> getPointMatchingCost2(MatrixXd mta, MatrixXd mtb, float perc
                 X.push_back(mta(validIds[i],j));
                 Y.push_back(mtb(validIds[vector[i]],j));
             }
-            matrix(i,k) = r_measure(X,Y);
+            matrix(i,k) = euclidean(X,Y);
         }
     }
     /*the X(METRIC 1) coordinate is the minim sum and the Y coordinate is the index of that column on the matrix cpsA*/

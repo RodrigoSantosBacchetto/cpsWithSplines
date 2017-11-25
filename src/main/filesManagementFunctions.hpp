@@ -23,7 +23,8 @@ std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath) {
                 std::string imagePath = directoryFullPath;
                 imagePath += std::string(imageFile->d_name, imageFile->d_namlen);
 
-
+                //std::cout << "Image name :  \n";
+                //std::cout << imagePath;
                 cv::Mat currentImage = cv::imread(imagePath, 0);
                 allImages.push_back(currentImage);
             }

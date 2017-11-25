@@ -72,11 +72,9 @@ int runExperiment(std::string imgDbBasePath, std::string resultsFolderBasePath, 
         // Read images for scenario.
         // Images are read in a way that the 1st and 11th image are the "root" images of each class
         std::vector<cv::Mat> classImages = readImagesFromDirectory(imageClasses[i]);
-
         // Go through the list of images from the specific case and calculate the CPS for each
         std::cout << "Working with CPS Signatures, both regular and refined... \n";
         for (int image = 0; image < classImages.size(); image++) {
-
             std::vector<cv::Point> fullContour = getKuimContour(classImages[image], ONLY_EXTERNAL_CONTOUR);
             std::vector<cv::Point> workContour;
 
