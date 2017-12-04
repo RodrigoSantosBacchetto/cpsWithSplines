@@ -35,6 +35,10 @@ typedef struct {
     MatrixXd CPSMatrix;
     std::vector<cv::Point> pointSample;
 } cspResult;
+typedef struct {
+    std::string imagePath;
+    cv::Mat image;
+} dualImage;
 
 int dx[8] = {-1, -1, 0, 1, 1, 1, 0, -1};
 int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
@@ -42,11 +46,12 @@ int dy[8] = {0, 1, 1, 1, 0, -1, -1, -1};
 
 typedef struct classResults {
     std::string class_name;
-    std::vector<cv::Mat> images;
+    std::vector<dualImage> images;
 
     std::vector<cspResult> cp_signatures_16; // n
     std::vector<cv::Point> prfA; // n
     std::vector<double> same_class_distances_16; // (n-1) / 2
+    std::vector<std::string> same_class_path_16; // (n-1) / 2
     std::vector<double> diff_class_distances_16; // (n-1) / 2
     std::double_t max_value_16= 0;
     std::double_t error_value_16= 0;

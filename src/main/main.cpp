@@ -5,11 +5,10 @@
 
 int main() {
 
-    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\pruebaR\\";
+    std::string parentDirectory = "C:\\Users\\Santos\\Desktop\\ImagenesSinDeformar\\";
     std::vector<std::string> imageClassesDirectories = getClassDirectories(parentDirectory);
 
-    largeDeformationExperimentWithSplineCps(imageClassesDirectories);
-/*    largeDeformationExperimentWithOriginalCps(imageClassesDirectories);*/
+    bestImagenesForClass(imageClassesDirectories);
 
 
 

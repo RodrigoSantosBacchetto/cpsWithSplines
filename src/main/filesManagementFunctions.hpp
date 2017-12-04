@@ -7,14 +7,14 @@
 
 #include "main.hpp"
 
-std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath);
+std::vector<dualImage> readImagesFromDirectory(std::string directoryFullPath);
 std::string getClassNameFromPath(std::string fullPath);
 
-std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath) {
+std::vector<dualImage> readImagesFromDirectory(std::string directoryFullPath) {
     DIR *dir;
     struct dirent *imageFile;
 
-    std::vector<cv::Mat> allImages;
+    std::vector<dualImage> allImages;
 
     if ((dir = opendir(directoryFullPath.c_str())) != NULL) {
         while ((imageFile = readdir(dir)) != NULL) {
@@ -24,7 +24,9 @@ std::vector<cv::Mat> readImagesFromDirectory(std::string directoryFullPath) {
                 imagePath += std::string(imageFile->d_name, imageFile->d_namlen);
 
 
-                cv::Mat currentImage = cv::imread(imagePath, 0);
+                dualImage currentImage;
+                currentImage.image = cv::imread(imagePath, 0);
+                currentImage.imagePath = imagePath;
                 allImages.push_back(currentImage);
             }
         }
