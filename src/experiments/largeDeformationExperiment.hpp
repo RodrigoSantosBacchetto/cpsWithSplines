@@ -75,7 +75,7 @@ void bestImagenesForClass(std::vector<std::string> imageClassesDirectories) {
     std::vector<int> indexs;
     for (int i = 0; i < resultsByClass.size(); i++) {
         double minValue = 0;
-        while (resultsByClass[i].same_class_distances_16.size() >= 7) {
+        while (resultsByClass[i].same_class_distances_16.size() >= 6) {
             int index = 0;
             minValue = resultsByClass[i].same_class_distances_16[0];
             for (int j = 0; j < resultsByClass[i].same_class_distances_16.size(); j++) {
