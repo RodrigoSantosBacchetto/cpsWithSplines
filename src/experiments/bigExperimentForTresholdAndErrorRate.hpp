@@ -94,11 +94,6 @@ int runExperiment(std::string imgDbBasePath, std::string resultsFolderBasePath, 
                 firstClassRootImageRefinedCps = refinedCpsMatrix;
                 regularResultFileEntry << "\t";
                 refinedResultFileEntry << "\t";
-            } else if (image == SECOND_CLASS_ROOT_IMAGE) {
-                secondClassRootImageRegularCps = regularCpsMatrix;
-                secondClassRootImageRefinedCps = refinedCpsMatrix;
-                regularResultFileEntry << "\t";
-                refinedResultFileEntry << "\t";
             } else {
                 double regularDistance = similarityMeasure(firstClassRootImageRegularCps, regularCpsMatrix, 0.5, 0.5);
                 double refinedDistance = similarityMeasure(firstClassRootImageRefinedCps, refinedCpsMatrix, 0.5, 0.5);
@@ -106,7 +101,7 @@ int runExperiment(std::string imgDbBasePath, std::string resultsFolderBasePath, 
                 regularResultFileEntry << regularDistance << "\t";
                 refinedResultFileEntry << refinedDistance << "\t";
 
-                if (image <= 10 ) {
+                if (image <= 4) {
                     averageDisimilarityOnSameClassRegular += regularDistance;
                     averageDisimilarityOnSameClassRefined += refinedDistance;
                 } else {
@@ -121,10 +116,10 @@ int runExperiment(std::string imgDbBasePath, std::string resultsFolderBasePath, 
             }
         }
 
-        averageDisimilarityOnSameClassRegular /= 10;
-        averageDisimilarityOnSameClassRefined /= 10;
-        averageDisimilarityOnDiffClassRegular /= 10;
-        averageDisimilarityOnDiffClassRefined /= 10;
+        averageDisimilarityOnSameClassRegular /= 4;
+        averageDisimilarityOnSameClassRefined /= 4;
+        averageDisimilarityOnDiffClassRegular /= 4;
+        averageDisimilarityOnDiffClassRefined /= 4;
 
         scenarioAveragesRegular.push_back(averageDisimilarityOnSameClassRegular);
         scenarioAveragesRegular.push_back(averageDisimilarityOnDiffClassRegular);

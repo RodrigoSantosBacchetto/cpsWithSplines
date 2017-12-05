@@ -50,15 +50,17 @@ cv::Point2d minSum(MatrixXd mat) {
 
 
 int getNext(int x, int y, int last, cv::Mat data, int totalRows, int totalCols) {
+    int ctrl = 1;
     int next = (last + 2) % 8;
 
     int nx = x + dx[next];
     int ny = y + dy[next];
 
-    while((next != last) && ((nx < 0) || (nx > totalCols) || (ny < 0) || (ny > totalRows) || ((int)(data.at<uchar>(ny,nx)) == 0))) {
+    while((ctrl < 8) && ((nx < 0) || (nx > totalCols) || (ny < 0) || (ny > totalRows) || ((int)(data.at<uchar>(ny,nx)) == 0))) {
         next = (next + 1) % 8;
         nx = x + dx[next];
         ny = y + dy[next];
+        ctrl++;
     }
 
     return next;
