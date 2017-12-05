@@ -53,6 +53,7 @@ typedef struct classResults {
     std::vector<double> same_class_distances_16; // (n-1) / 2
     std::vector<std::string> same_class_path_16; // (n-1) / 2
     std::vector<double> diff_class_distances_16; // (n-1) / 2
+    std::vector<std::string> diff_class_path_16; // (n-1) / 2
     std::double_t max_value_16= 0;
     std::double_t error_value_16= 0;
 
